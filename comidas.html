@@ -2,6 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+  <link rel="preconnect" href="https://vfqjcyecqecfrevmnivy.supabase.co">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comidas/Salidas - org.BASE</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -9,23 +12,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%); min-height: 100vh; color: #001a4d; }
-        .navbar { background: linear-gradient(135deg, #001a4d 0%, #003d99 100%); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2); }
+        html { overflow-x: hidden; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%); min-height: 100vh; color: #001a4d; overflow-x: hidden; }
+        .navbar { background: linear-gradient(135deg, #001a4d 0%, #003d99 100%); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2); flex-wrap: wrap; gap: 15px; position: sticky; top: 0; z-index: 100; }
         .logo { font-size: 38px; font-weight: 700; text-decoration: none; display: flex; align-items: stretch; align-self: stretch; margin: -20px 0 -20px -40px; }
         .navbar-right { display: flex; align-items: center; gap: 20px; }
         .welcome-text { color: white; font-size: 16px; }
         .profile-icon { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         .logout-btn { padding: 10px 20px; background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
-        .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: #e6f0ff; color: #0066cc; border: 2px solid #99ccff; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none; cursor: pointer; transition: all .2s; white-space: nowrap; }
+        .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: white; color: #0066cc; border: 2px solid #0066cc; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
         .back-btn:hover { background: #0066cc; color: white; }
         .container { max-width: 1000px; margin: 40px auto; padding: 20px; }
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; overflow-y: auto; }
         .modal.active { display: flex; }
-        .modal-content { background: white; padding: 40px; border-radius: 12px; width: 95%; max-width: 950px; box-shadow: 0 8px 24px rgba(0, 26, 77, 0.2); margin: 20px auto; }
+        .modal-content { background: white; padding: 40px; border-radius: 16px; width: 95%; max-width: 950px; box-shadow: 0 10px 40px rgba(0, 26, 77, 0.2); margin: 20px auto; }
         .modal-header { font-size: 28px; font-weight: 700; margin-bottom: 30px; color: #001a4d; }
         .form-group { margin-bottom: 25px; }
         .form-label { font-weight: 700; margin-bottom: 10px; display: block; color: #001a4d; font-size: 16px; }
-        .form-input, .form-select { width: 100%; padding: 12px; border: 2px solid #99ccff; border-radius: 8px; font-size: 14px; font-family: 'Poppins', sans-serif; }
+        .form-input, .form-select { width: 100%; padding: 12px; border: 2px solid #0066cc; border-radius: 8px; font-size: 14px; font-family: 'Poppins', sans-serif; }
         .input-row { display: flex; gap: 10px; }
         .input-row input { flex: 1; }
         .input-row button { background: #0066cc; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; }
@@ -33,9 +37,9 @@
         .person-tag { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; background: transparent; border: 2px solid; font-weight: 600; }
         .person-tag button { background: transparent; border: none; cursor: pointer; border-radius: 50%; width: 20px; height: 20px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; }
         /* TABLA MEJORADA */
-        .table-wrapper { margin: 20px 0; border: 2px solid #99ccff; border-radius: 8px; overflow: hidden; background: white; }
+        .table-wrapper { margin: 20px 0; border: 2px solid #0066cc; border-radius: 8px; overflow: hidden; background: white; }
         .meal-table { width: 100%; border-collapse: collapse; }
-        .meal-table thead { background: #e6f0ff; position: sticky; top: 0; z-index: 10; }
+        .meal-table thead { background: white; position: sticky; top: 0; z-index: 10; }
         .meal-table th { padding: 14px 10px; text-align: center; font-weight: 700; color: #001a4d; border-right: 2px solid #99ccff; font-size: 13px; }
         .meal-table th:first-child { text-align: left; }
         .meal-table th:last-child { border-right: none; }
@@ -118,17 +122,158 @@
         .btn-edit { background: #FFA500; color: white; font-size: 11px; }
         .btn-share { background: #0066cc; color: white; font-size: 11px; }
         .btn-delete { background: #ff6b6b; color: white; font-size: 11px; }
-        .add-meal-btn { background: #0066cc; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; }
+        .add-meal-btn { background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%); color: white; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 15px; transition: all 0.3s ease; box-shadow: 0 4px 14px rgba(0,102,204,0.3); font-family: 'Poppins', sans-serif; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .error-msg { color: #ff6b6b; font-size: 13px; margin-top: 10px; }
-    </style>
+        .add-meal-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,102,204,0.4); }
+        /* ── RESPONSIVE ─────────────────────────── */
+        @media (max-width: 900px) {
+            .container { max-width: 100%; padding: 20px; margin-top: 24px; }
+            .modal-content { padding: 28px 20px; }
+            .discount-tip { grid-template-columns: 1fr; }
+            .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        }
+        @media (max-width: 600px) {
+            .navbar { padding: 12px 16px; }
+            .logo { margin: -12px 0 -12px -16px; }
+            .welcome-text { display: none; }
+            .container { padding: 12px; margin-top: 16px; }
+            .meals-grid { grid-template-columns: 1fr; gap: 20px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .modal-content { padding: 20px 14px; }
+            .modal-header { font-size: 22px; }
+            .input-row { flex-wrap: wrap; }
+            .add-dish-row-in-wrapper { flex-wrap: wrap; }
+            .modal-buttons button { padding: 12px; font-size: 14px; }
+            .meal-card { transform: none !important; }
+            .meal-card:hover { transform: scale(1.03) !important; }
+        }
+        /* ── BOTTOM NAV (mobile) ─────────────────────────────── */
+        .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #dde8ff;z-index:500;padding:6px 0 max(6px,env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,26,77,0.1);}
+        @media(max-width:768px){.bottom-nav{display:flex;justify-content:space-around;}body{padding-bottom:68px!important;}}
+        .bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#99a;padding:4px 6px;border-radius:8px;transition:color .2s;min-width:40px;}
+        .bn-item.active,.bn-item:hover{color:#003d99;}.bn-icon{font-size:18px;line-height:1.2;}.bn-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;font-family:'Poppins',sans-serif;}
+    .page-subtitle { font-size: 13px; color: #0066cc; margin-top: 2px; font-weight: 400; }
+    /* ══════════════════════════════════════════════════════════════
+       MODO OSCURO — Rediseño completo
+    ══════════════════════════════════════════════════════════════ */
+    [data-theme=dark] { color-scheme: dark; }
+    [data-theme=dark] body { background: linear-gradient(135deg,#0d1117 0%,#161b22 100%) !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .navbar { background: linear-gradient(135deg,#080d18 0%,#0d1a33 100%) !important; }
+
+    /* Cards / secciones */
+    [data-theme=dark] .card,[data-theme=dark] .sum-card,[data-theme=dark] .table-section,
+    [data-theme=dark] .login-card,[data-theme=dark] .plant-card,[data-theme=dark] .trip-card,
+    [data-theme=dark] .category-section,[data-theme=dark] .summary-section,[data-theme=dark] .panel,
+    [data-theme=dark] .section,[data-theme=dark] .page-header,[data-theme=dark] .modal-content,
+    [data-theme=dark] .sk-card,[data-theme=dark] .sk-plant-card,[data-theme=dark] .info-card,
+    [data-theme=dark] .stat-chip,[data-theme=dark] .installment-card,[data-theme=dark] .add-form,
+    [data-theme=dark] .person-section,[data-theme=dark] .transfer-section,[data-theme=dark] .footer,
+    [data-theme=dark] .items-container,[data-theme=dark] .table-wrapper,[data-theme=dark] .participants-container,
+    [data-theme=dark] .checkboxes-group,[data-theme=dark] .installments-content {
+      background: #1e2a3d !important; color: #c9d1d9 !important; border-color: #2d3748 !important;
+    }
+
+    /* Texto principal */
+    [data-theme=dark] h1,[data-theme=dark] h2,[data-theme=dark] h3,[data-theme=dark] h4,
+    [data-theme=dark] .page-title,[data-theme=dark] .card-title,[data-theme=dark] .panel-title,
+    [data-theme=dark] .section-title,[data-theme=dark] .trip-title,[data-theme=dark] .card-nombre,
+    [data-theme=dark] .card-content,[data-theme=dark] .modal-header,[data-theme=dark] .summary-title,
+    [data-theme=dark] .category-name,[data-theme=dark] .debt-detail,[data-theme=dark] .info-label,
+    [data-theme=dark] .form-label { color: #c9d1d9 !important; }
+
+    [data-theme=dark] .page-subtitle,[data-theme=dark] .sum-label,[data-theme=dark] .welcome-text,
+    [data-theme=dark] .card-info,[data-theme=dark] .stat-label,[data-theme=dark] .card-notas,
+    [data-theme=dark] .section-label,[data-theme=dark] label,[data-theme=dark] .month-display,
+    [data-theme=dark] .installment-month { color: #8b9ab7 !important; }
+
+    /* Inputs / forms */
+    [data-theme=dark] input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]),
+    [data-theme=dark] select,[data-theme=dark] textarea {
+      background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important;
+    }
+    [data-theme=dark] input::placeholder,[data-theme=dark] textarea::placeholder { color: #4d6080 !important; }
+    [data-theme=dark] .form-group input:focus,[data-theme=dark] .form-group select:focus,
+    [data-theme=dark] .form-group textarea:focus { box-shadow: 0 0 8px rgba(77,148,255,0.2) !important; }
+
+    /* Tablas */
+    [data-theme=dark] td { border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] tr.header-row td { background: #1a2535 !important; color: #7b96c0 !important; }
+    [data-theme=dark] tr.sec-header td { background: #162033 !important; color: #8badd0 !important; }
+    [data-theme=dark] tr.total-row td  { background: #182030 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] tr.balance-row   { background: #162d1a !important; }
+    [data-theme=dark] tr.balance-row td { color: #4ade80 !important; }
+    [data-theme=dark] .input-cell input { color: #f87171 !important; background: transparent !important; }
+    [data-theme=dark] .summary-table th { background: #1a2535 !important; color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .summary-table td { background: #1e2a3d !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .summary-table tr:hover td { background: #243347 !important; }
+    [data-theme=dark] .debts-table th  { background: #1a2535 !important; color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .debts-table td  { border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .debts-table tr:hover { background: #243347 !important; }
+    [data-theme=dark] .meal-table thead { background: #1a2535 !important; }
+    [data-theme=dark] .meal-table th { color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .meal-table td { border-color: #2d3748 !important; }
+    [data-theme=dark] .meal-table td:nth-child(1),[data-theme=dark] .meal-table td:nth-child(2) { background: #1a2535 !important; }
+    [data-theme=dark] .meal-table tbody tr:hover td { background: #1f2e42 !important; }
+    [data-theme=dark] .totals-row { background: #1a2535 !important; }
+
+    /* Navegador de meses */
+    [data-theme=dark] .month-nav { background: #162033 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .month-tab { background: #1a2535 !important; border-color: #2d3748 !important; color: #8b9ab7 !important; }
+    [data-theme=dark] .month-tab:hover { background: #1e2a3d !important; border-color: #4d6080 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .month-tab.active { background: linear-gradient(135deg,#003d99 0%,#0055cc 100%) !important; border-color: #003d99 !important; color: white !important; }
+    [data-theme=dark] .nav-arrow { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .nav-arrow:hover { background: #003d99 !important; color: white !important; border-color: #003d99 !important; }
+    [data-theme=dark] .table-header { border-bottom-color: #2d3748 !important; }
+
+    /* Botones */
+    [data-theme=dark] .back-btn { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .back-btn:hover { background: #2d3e55 !important; color: white !important; }
+    [data-theme=dark] .btn-cancel,[data-theme=dark] .btn-cancelar { background: #2d3748 !important; color: #c9d1d9 !important; border-color: #3d4f66 !important; }
+    [data-theme=dark] .btn-action { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .btn-action:hover { background: #2d3e55 !important; }
+    [data-theme=dark] .btn-config { background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.2) !important; }
+    [data-theme=dark] .month-nav-btn { background: #2d3e55 !important; }
+
+    /* Barra inferior */
+    [data-theme=dark] .bottom-nav { background: #0d1117 !important; border-top-color: #2d3748 !important; }
+    [data-theme=dark] .bn-item { color: #4d6080 !important; }
+    [data-theme=dark] .bn-item.active,[data-theme=dark] .bn-item:hover { color: #4d94ff !important; }
+
+    /* Skeleton */
+    [data-theme=dark] .sk { background: linear-gradient(90deg,#1a2535 25%,#1e2a3d 50%,#1a2535 75%) !important; background-size: 200% 100% !important; }
+
+    /* Misceláneos */
+    [data-theme=dark] .installment-amount,[data-theme=dark] .stat-value,[data-theme=dark] .info-value { color: #4d94ff !important; }
+    [data-theme=dark] .expand-btn { color: #4d94ff !important; }
+    [data-theme=dark] .panel-header { border-bottom-color: #2d3748 !important; }
+    [data-theme=dark] .items-container::-webkit-scrollbar-track { background: #162030; }
+    [data-theme=dark] .items-container::-webkit-scrollbar-thumb { background: #2d3748; }
+    [data-theme=dark] .card-img-wrap { background: linear-gradient(135deg,#162033,#1e2a3d) !important; }
+    [data-theme=dark] .status-badge.badge-ok { background: #162d1a !important; color: #4ade80 !important; }
+    [data-theme=dark] .installments-row { background: #162030 !important; }
+    [data-theme=dark] .category-color-dot { box-shadow: 0 0 0 2px #2d3748; }
+    [data-theme=dark] .add-category-input,[data-theme=dark] .add-category-row input { background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .var-popup-title { color: #c9d1d9 !important; }
+    [data-theme=dark] #var-detail-popup { background: #1e2a3d !important; box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important; }
+    [data-theme=dark] .divider { color: #4d6080 !important; }
+    [data-theme=dark] .links a { color: #4d94ff !important; }
+    [data-theme=dark] .google-btn { background: #1e2a3d !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .person-tag { border-color: #2d3748 !important; }
+    [data-theme=dark] .circle-btn { background: #1e2a3d !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .circle-btn.active { background: #0066cc !important; }
+    [data-theme=dark] .table-input-small { background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .add-dish-row-in-wrapper { background: #162030 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] #topMonthNavPlaceholder { background: transparent !important; }
+  </style>
 </head>
 <body>
     <nav class="navbar">
         <a href="Final.html" class="logo"><span style="background:white;-webkit-text-fill-color:#001a4d;font-weight:700;padding:0 12px 0 40px;display:flex;align-items:center;margin-right:-8px;">org</span><span style="display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0;align-self:center;flex-shrink:0;position:relative;z-index:1;"></span><span style="-webkit-text-fill-color:white;font-weight:700;align-self:center;padding-left:8px;">BASE</span></a>
         <div class="navbar-right">
-            <span class="welcome-text" id="welcomeText">¡Bienvenido!</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;"><span class="welcome-text" id="welcomeText">¡Bienvenido!</span><span id="navbar-datetime" style="font-size:11px;color:rgba(255,255,255,0.65);font-family:'Poppins',sans-serif;letter-spacing:0.2px;display:flex;gap:12px;"></span></div>
             <button class="logout-btn" onclick="handleLogout()">Cerrar sesión</button>
+            <button id="theme-toggle" onclick="toggleTheme()" title="Modo oscuro/claro" style="background:none;border:none;cursor:pointer;font-size:19px;padding:4px 6px;border-radius:8px;transition:background .2s;line-height:1;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='none'">🌙</button>
             <div class="profile-icon" id="profileIcon">S</div>
         </div>
     </nav>
@@ -137,7 +282,10 @@
         <div class="header">
             <div style="display:flex;align-items:center;gap:16px;">
                 <a href="Final.html" class="back-btn">← Volver</a>
-                <h1>🍽️ Comidas/Salidas</h1>
+                <div>
+                    <h1>🍽️ Comidas/Salidas</h1>
+                    <p class="page-subtitle">Divide cuentas y registra salidas con amigos</p>
+                </div>
             </div>
             <button class="add-meal-btn" onclick="openNewMealModal()">+ Agregar Nueva</button>
         </div>
@@ -307,11 +455,13 @@
             updateTable();
         }
 
+        function _escC(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
         function renderPersons() {
             const tags = document.getElementById('personsTags');
             tags.innerHTML = state.persons.map(p => `
                 <div class="person-tag" style="border-color: ${p.color}; color: ${p.color};">
-                    ${p.name}
+                    ${_escC(p.name)}
                     <button onclick="removePerson(${p.id})" style="color: ${p.color};">✕</button>
                 </div>
             `).join('');
@@ -319,14 +469,14 @@
             // ¿Quién eres tú?
             const meSelect = document.getElementById('meSelect');
             meSelect.innerHTML = '<option value="">-- Selecciona --</option>' + state.persons.map(p => `
-                <option value="${p.id}" ${state.me == p.id ? 'selected' : ''}>${p.name}</option>
+                <option value="${p.id}" ${state.me == p.id ? 'selected' : ''}>${_escC(p.name)}</option>
             `).join('');
             meSelect.onchange = () => { state.me = meSelect.value ? parseInt(meSelect.value) : null; updateTable(); };
 
             // ¿Quién pagó?
             const payerSelect = document.getElementById('payerSelect');
             payerSelect.innerHTML = '<option value="">-- Selecciona --</option>' + state.persons.map(p => `
-                <option value="${p.id}" ${state.payer == p.id ? 'selected' : ''}>${p.name}</option>
+                <option value="${p.id}" ${state.payer == p.id ? 'selected' : ''}>${_escC(p.name)}</option>
             `).join('');
             payerSelect.onchange = () => { state.payer = payerSelect.value ? parseInt(payerSelect.value) : null; updateTable(); };
 
@@ -334,7 +484,7 @@
             const headerRow = document.getElementById('headerRow');
             if (headerRow) {
                 headerRow.innerHTML = `<th style="width: 150px;">Descripción</th><th style="width: 90px;">Precio</th>` + 
-                    state.persons.map(p => `<th style="color: ${p.color};">${p.name}</th>`).join('');
+                    state.persons.map(p => `<th style="color: ${p.color};">${_escC(p.name)}</th>`).join('');
             }
         }
 
@@ -507,6 +657,19 @@
             const user = await mySupabase.auth.getUser();
             if (!user.data.user) { alert('No autenticado'); return; }
 
+            // Validar monto > 0
+            const totalMeal = Object.values(state.persons.reduce((acc, p) => {
+                acc[p.id] = 0; return acc;
+            }, {}));
+            const totalSum = state.dishes.reduce((s, d) => s + d.price, 0);
+            if (totalSum <= 0) { alert('El monto total debe ser mayor a $0'); return; }
+
+            // Deshabilitar botón durante guardado
+            const btn = document.getElementById('saveMealBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Guardando...';
+
             // Calcular subtotales dividiendo platos compartidos (igual que updateTable)
             const personSubtotals = {};
             state.persons.forEach(p => { personSubtotals[p.id] = 0; });
@@ -572,13 +735,15 @@
                 const { error } = await mySupabase.from('meals').insert([dataToInsert]);
                 if (error) { 
                     console.error('Error guardando:', error.message);
-                    alert('Error: ' + error.message); 
+                    alert('Error: ' + error.message);
+                    btn.disabled = false; btn.textContent = originalText;
                     return; 
                 }
                 console.log('Post-it guardado exitosamente');
                 alert('✓ Post-it guardado');
             }
 
+            btn.disabled = false; btn.textContent = originalText;
             closeModal();
             await new Promise(resolve => setTimeout(resolve, 500));
             loadMeals();
@@ -861,5 +1026,22 @@
             }
         });
     </script>
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav"><a href="Final.html" class="bn-item"><span class="bn-icon">🏠</span><span class="bn-label">Inicio</span></a><a href="resumen-global.html" class="bn-item"><span class="bn-icon">📊</span><span class="bn-label">Finanzas</span></a><a href="comidas.html" class="bn-item"><span class="bn-icon">🍽️</span><span class="bn-label">Comidas</span></a><a href="viajes.html" class="bn-item"><span class="bn-icon">✈️</span><span class="bn-label">Viajes</span></a><a href="deudas-tc.html" class="bn-item"><span class="bn-icon">💳</span><span class="bn-label">Deudas</span></a><a href="plantas.html" class="bn-item"><span class="bn-icon">🌿</span><span class="bn-label">Plantas</span></a><a href="wishlist.html" class="bn-item"><span class="bn-icon">🛍️</span><span class="bn-label">Lista</span></a></nav>
+<script>
+(function startClock(){
+  var dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  function tick(){
+    var el=document.getElementById('navbar-datetime');
+    if(!el)return;
+    var now=new Date();
+    var hh=String(now.getHours()).padStart(2,'0');
+    var mm=String(now.getMinutes()).padStart(2,'0');
+    el.innerHTML='<span>'+dias[now.getDay()]+' '+now.getDate()+' '+meses[now.getMonth()]+' '+now.getFullYear()+'</span><span>'+hh+':'+mm+'</span>';
+  }
+  tick();setInterval(tick,1000);
+})();
+</script><script>function toggleTheme(){var n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('org-theme',n);var b=document.getElementById('theme-toggle');if(b)b.textContent=n==='dark'?'☀️':'🌙';}(function(){var t=localStorage.getItem('org-theme');if(t)document.documentElement.setAttribute('data-theme',t);var b=document.getElementById('theme-toggle');if(b)b.textContent=(document.documentElement.getAttribute('data-theme')||'light')==='dark'?'☀️':'🌙';var p=(window.location.pathname.split('/').pop()||'Final.html');document.querySelectorAll('.bn-item').forEach(function(a){if((a.getAttribute('href')||'').split('/').pop()===p)a.classList.add('active');});})();</script>
 </body>
 </html>
