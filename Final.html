@@ -3,6 +3,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+  <link rel="preconnect" href="https://vfqjcyecqecfrevmnivy.supabase.co">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>org.BASE - Dashboard Personal</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,11 +17,14 @@
             box-sizing: border-box;
         }
 
+        html { overflow-x: hidden; }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%);
             min-height: 100vh;
             color: #001a4d;
+            overflow-x: hidden;
         }
 
         /* BARRA DE NAVEGACIÓN */
@@ -30,7 +36,10 @@
             align-items: center;
             box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2);
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .logo {
@@ -247,17 +256,23 @@
 
         .card {
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 25px;
             box-shadow: 0 6px 20px rgba(0, 26, 77, 0.1);
             border-top: 5px solid;
-            transition: all 0.3s ease;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            animation: cardIn 0.4s ease both;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 26, 77, 0.15);
+            transform: translateY(-7px);
+            box-shadow: 0 16px 38px rgba(0, 26, 77, 0.18);
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(22px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .card-icon {
@@ -303,6 +318,27 @@
             border-top-color: #ffdd00;
         }
 
+        .card-calendario {
+            border-top-color: #4285F4;
+        }
+
+        /* ── Tarjeta Calendario ── */
+        .gcal-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+        .gcal-link-btn { display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:8px; background:#f0f4ff; border:1px solid #dde8ff; color:#4285F4; text-decoration:none; font-size:15px; transition:all 0.2s; flex-shrink:0; }
+        .gcal-link-btn:hover { background:#4285F4; color:white; border-color:#4285F4; }
+        .gcal-event { display:flex; align-items:flex-start; gap:8px; padding:5px 0; border-bottom:1px solid #f0f4ff; }
+        .gcal-event:last-child { border-bottom:none; }
+        .gcal-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; margin-top:3px; }
+        .gcal-name { font-weight:600; color:#001a4d; font-size:12px; line-height:1.3; }
+        .gcal-date { font-size:11px; color:#888; margin-top:1px; }
+        .gcal-connect-btn { display:flex; align-items:center; justify-content:center; gap:7px; padding:9px 14px; background:#4285F4; color:white; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; width:100%; transition:all 0.2s; font-family:'Poppins',sans-serif; box-shadow:0 3px 10px rgba(66,133,244,0.3); }
+        .gcal-connect-btn:hover { background:#3367d6; transform:translateY(-1px); box-shadow:0 5px 14px rgba(66,133,244,0.4); }
+        .gcal-disconnect { font-size:10px; color:#aaa; cursor:pointer; text-decoration:underline; display:block; text-align:right; margin-top:4px; background:none; border:none; font-family:'Poppins',sans-serif; }
+        .gcal-disconnect:hover { color:#dc2626; }
+        [data-theme=dark] .gcal-event { border-bottom-color:#2d3748; }
+        [data-theme=dark] .gcal-name { color:#c9d1d9; }
+        [data-theme=dark] .gcal-link-btn { background:#1e2a3d; border-color:#2d3748; }
+
         .logout-btn {
             padding: 12px 30px;
             background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%);
@@ -331,7 +367,7 @@
             }
 
             .navbar-right {
-                gap: 15px;
+                gap: 12px;
                 width: 100%;
             }
 
@@ -349,7 +385,7 @@
             }
 
             .cards-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .dashboard-section {
@@ -357,10 +393,142 @@
             }
         }
 
+        @media (max-width: 480px) {
+            .navbar { padding: 12px 16px; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .dashboard-section { padding: 12px; }
+            .login-card { padding: 24px 20px; }
+            .card { padding: 20px; }
+            .card-icon { font-size: 32px; margin-bottom: 10px; }
+            .card-title { font-size: 17px; }
+        }
+
         .hidden {
             display: none !important;
         }
-    </style>
+
+        /* ── SKELETON SCREENS ──────────────────────────── */
+        @keyframes shimmer { 0%{background-position:-200% 0}100%{background-position:200% 0} }
+        .sk{background:linear-gradient(90deg,#e8edf5 25%,#f0f4ff 50%,#e8edf5 75%);background-size:200% 100%;animation:shimmer 1.6s infinite;border-radius:6px;display:block;}
+        .sk-line{height:12px;margin-bottom:8px;width:100%;}
+        .sk-short{width:60%;}
+        /* ── BOTTOM NAV (mobile) ─────────────────────────────── */
+        .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #dde8ff;z-index:500;padding:6px 0 max(6px,env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,26,77,0.1);}
+        @media(max-width:768px){.bottom-nav{display:flex;justify-content:space-around;}body{padding-bottom:68px!important;}}
+        .bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#99a;padding:4px 6px;border-radius:8px;transition:color .2s;min-width:40px;}
+        .bn-item.active,.bn-item:hover{color:#003d99;}.bn-icon{font-size:18px;line-height:1.2;}.bn-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;font-family:'Poppins',sans-serif;}
+    /* ══════════════════════════════════════════════════════════════
+       MODO OSCURO — Rediseño completo
+    ══════════════════════════════════════════════════════════════ */
+    [data-theme=dark] { color-scheme: dark; }
+    [data-theme=dark] body { background: linear-gradient(135deg,#0d1117 0%,#161b22 100%) !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .navbar { background: linear-gradient(135deg,#080d18 0%,#0d1a33 100%) !important; }
+
+    /* Cards / secciones */
+    [data-theme=dark] .card,[data-theme=dark] .sum-card,[data-theme=dark] .table-section,
+    [data-theme=dark] .login-card,[data-theme=dark] .plant-card,[data-theme=dark] .trip-card,
+    [data-theme=dark] .category-section,[data-theme=dark] .summary-section,[data-theme=dark] .panel,
+    [data-theme=dark] .section,[data-theme=dark] .page-header,[data-theme=dark] .modal-content,
+    [data-theme=dark] .sk-card,[data-theme=dark] .sk-plant-card,[data-theme=dark] .info-card,
+    [data-theme=dark] .stat-chip,[data-theme=dark] .installment-card,[data-theme=dark] .add-form,
+    [data-theme=dark] .person-section,[data-theme=dark] .transfer-section,[data-theme=dark] .footer,
+    [data-theme=dark] .items-container,[data-theme=dark] .table-wrapper,[data-theme=dark] .participants-container,
+    [data-theme=dark] .checkboxes-group,[data-theme=dark] .installments-content {
+      background: #1e2a3d !important; color: #c9d1d9 !important; border-color: #2d3748 !important;
+    }
+
+    /* Texto principal */
+    [data-theme=dark] h1,[data-theme=dark] h2,[data-theme=dark] h3,[data-theme=dark] h4,
+    [data-theme=dark] .page-title,[data-theme=dark] .card-title,[data-theme=dark] .panel-title,
+    [data-theme=dark] .section-title,[data-theme=dark] .trip-title,[data-theme=dark] .card-nombre,
+    [data-theme=dark] .card-content,[data-theme=dark] .modal-header,[data-theme=dark] .summary-title,
+    [data-theme=dark] .category-name,[data-theme=dark] .debt-detail,[data-theme=dark] .info-label,
+    [data-theme=dark] .form-label { color: #c9d1d9 !important; }
+
+    [data-theme=dark] .page-subtitle,[data-theme=dark] .sum-label,[data-theme=dark] .welcome-text,
+    [data-theme=dark] .card-info,[data-theme=dark] .stat-label,[data-theme=dark] .card-notas,
+    [data-theme=dark] .section-label,[data-theme=dark] label,[data-theme=dark] .month-display,
+    [data-theme=dark] .installment-month { color: #8b9ab7 !important; }
+
+    /* Inputs / forms */
+    [data-theme=dark] input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]),
+    [data-theme=dark] select,[data-theme=dark] textarea {
+      background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important;
+    }
+    [data-theme=dark] input::placeholder,[data-theme=dark] textarea::placeholder { color: #4d6080 !important; }
+    [data-theme=dark] .form-group input:focus,[data-theme=dark] .form-group select:focus,
+    [data-theme=dark] .form-group textarea:focus { box-shadow: 0 0 8px rgba(77,148,255,0.2) !important; }
+
+    /* Tablas */
+    [data-theme=dark] td { border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] tr.header-row td { background: #1a2535 !important; color: #7b96c0 !important; }
+    [data-theme=dark] tr.sec-header td { background: #162033 !important; color: #8badd0 !important; }
+    [data-theme=dark] tr.total-row td  { background: #182030 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] tr.balance-row   { background: #162d1a !important; }
+    [data-theme=dark] tr.balance-row td { color: #4ade80 !important; }
+    [data-theme=dark] .input-cell input { color: #f87171 !important; background: transparent !important; }
+    [data-theme=dark] .summary-table th { background: #1a2535 !important; color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .summary-table td { background: #1e2a3d !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .summary-table tr:hover td { background: #243347 !important; }
+    [data-theme=dark] .debts-table th  { background: #1a2535 !important; color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .debts-table td  { border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .debts-table tr:hover { background: #243347 !important; }
+    [data-theme=dark] .meal-table thead { background: #1a2535 !important; }
+    [data-theme=dark] .meal-table th { color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .meal-table td { border-color: #2d3748 !important; }
+    [data-theme=dark] .meal-table td:nth-child(1),[data-theme=dark] .meal-table td:nth-child(2) { background: #1a2535 !important; }
+    [data-theme=dark] .meal-table tbody tr:hover td { background: #1f2e42 !important; }
+    [data-theme=dark] .totals-row { background: #1a2535 !important; }
+
+    /* Navegador de meses */
+    [data-theme=dark] .month-nav { background: #162033 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .month-tab { background: #1a2535 !important; border-color: #2d3748 !important; color: #8b9ab7 !important; }
+    [data-theme=dark] .month-tab:hover { background: #1e2a3d !important; border-color: #4d6080 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .month-tab.active { background: linear-gradient(135deg,#003d99 0%,#0055cc 100%) !important; border-color: #003d99 !important; color: white !important; }
+    [data-theme=dark] .nav-arrow { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .nav-arrow:hover { background: #003d99 !important; color: white !important; border-color: #003d99 !important; }
+    [data-theme=dark] .table-header { border-bottom-color: #2d3748 !important; }
+
+    /* Botones */
+    [data-theme=dark] .back-btn { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .back-btn:hover { background: #2d3e55 !important; color: white !important; }
+    [data-theme=dark] .btn-cancel,[data-theme=dark] .btn-cancelar { background: #2d3748 !important; color: #c9d1d9 !important; border-color: #3d4f66 !important; }
+    [data-theme=dark] .btn-action { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .btn-action:hover { background: #2d3e55 !important; }
+    [data-theme=dark] .btn-config { background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.2) !important; }
+    [data-theme=dark] .month-nav-btn { background: #2d3e55 !important; }
+
+    /* Barra inferior */
+    [data-theme=dark] .bottom-nav { background: #0d1117 !important; border-top-color: #2d3748 !important; }
+    [data-theme=dark] .bn-item { color: #4d6080 !important; }
+    [data-theme=dark] .bn-item.active,[data-theme=dark] .bn-item:hover { color: #4d94ff !important; }
+
+    /* Skeleton */
+    [data-theme=dark] .sk { background: linear-gradient(90deg,#1a2535 25%,#1e2a3d 50%,#1a2535 75%) !important; background-size: 200% 100% !important; }
+
+    /* Misceláneos */
+    [data-theme=dark] .installment-amount,[data-theme=dark] .stat-value,[data-theme=dark] .info-value { color: #4d94ff !important; }
+    [data-theme=dark] .expand-btn { color: #4d94ff !important; }
+    [data-theme=dark] .panel-header { border-bottom-color: #2d3748 !important; }
+    [data-theme=dark] .items-container::-webkit-scrollbar-track { background: #162030; }
+    [data-theme=dark] .items-container::-webkit-scrollbar-thumb { background: #2d3748; }
+    [data-theme=dark] .card-img-wrap { background: linear-gradient(135deg,#162033,#1e2a3d) !important; }
+    [data-theme=dark] .status-badge.badge-ok { background: #162d1a !important; color: #4ade80 !important; }
+    [data-theme=dark] .installments-row { background: #162030 !important; }
+    [data-theme=dark] .category-color-dot { box-shadow: 0 0 0 2px #2d3748; }
+    [data-theme=dark] .add-category-input,[data-theme=dark] .add-category-row input { background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .var-popup-title { color: #c9d1d9 !important; }
+    [data-theme=dark] #var-detail-popup { background: #1e2a3d !important; box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important; }
+    [data-theme=dark] .divider { color: #4d6080 !important; }
+    [data-theme=dark] .links a { color: #4d94ff !important; }
+    [data-theme=dark] .google-btn { background: #1e2a3d !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .person-tag { border-color: #2d3748 !important; }
+    [data-theme=dark] .circle-btn { background: #1e2a3d !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .circle-btn.active { background: #0066cc !important; }
+    [data-theme=dark] .table-input-small { background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .add-dish-row-in-wrapper { background: #162030 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] #topMonthNavPlaceholder { background: transparent !important; }
+  </style>
 </head>
 <body>
 
@@ -368,8 +536,12 @@
     <nav class="navbar" id="navbar" style="display: none;">
         <div class="logo"><span style="background:white;-webkit-text-fill-color:#001a4d;font-weight:700;padding:0 12px 0 40px;display:flex;align-items:center;margin-right:-8px;">org</span><span style="display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0;align-self:center;flex-shrink:0;position:relative;z-index:1;"></span><span style="-webkit-text-fill-color:white;font-weight:700;align-self:center;padding-left:8px;">BASE</span></div>
         <div class="navbar-right">
-            <span class="welcome-text" id="welcomeText">¡Bienvenido!</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+              <span class="welcome-text" id="welcomeText">¡Bienvenido!</span>
+              <span id="navbar-datetime" style="font-size:11px;color:rgba(255,255,255,0.65);font-family:'Poppins',sans-serif;letter-spacing:0.2px;display:flex;gap:12px;"></span>
+            </div>
             <button class="logout-btn" onclick="handleLogout()" style="margin: 0; padding: 10px 20px; font-size: 13px;">Cerrar sesión</button>
+            <button id="theme-toggle" onclick="toggleTheme()" title="Modo oscuro/claro" style="background:none;border:none;cursor:pointer;font-size:19px;padding:4px 6px;border-radius:8px;transition:background .2s;line-height:1;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='none'">🌙</button>
             <div class="profile-icon" id="profileIcon" onclick="openProfileModal()" title="Editar perfil" style="cursor:pointer;">S</div>
         </div>
     </nav>
@@ -506,7 +678,7 @@
                     <div class="card-icon">💳</div>
                     <div class="card-title">Deudas TC</div>
                     <div class="card-content" id="deudas-content">
-                        <strong>Cargando...</strong>
+                        <span class="sk sk-line"></span><span class="sk sk-line sk-short"></span><span class="sk sk-line"></span>
                     </div>
                 </div>
 
@@ -515,7 +687,7 @@
                     <div class="card-icon">🍽️</div>
                     <div class="card-title" onclick="location.href='comidas.html'">Comidas/Salidas</div>
                     <div class="card-content" id="comidas-content">
-                        <strong>Cargando...</strong>
+                        <span class="sk sk-line"></span><span class="sk sk-line sk-short"></span><span class="sk sk-line"></span>
                     </div>
                 </div>
 
@@ -524,7 +696,7 @@
                     <div class="card-icon">🌿</div>
                     <div class="card-title">Plantas</div>
                     <div class="card-content" id="plantas-content">
-                        <strong>Cargando...</strong>
+                        <span class="sk sk-line"></span><span class="sk sk-line sk-short"></span><span class="sk sk-line"></span>
                     </div>
                 </div>
 
@@ -533,7 +705,7 @@
                     <div class="card-icon">✈️</div>
                     <div class="card-title">Viajes</div>
                     <div class="card-content" id="viajes-content">
-                        <strong>Cargando...</strong>
+                        <span class="sk sk-line"></span><span class="sk sk-line sk-short"></span><span class="sk sk-line"></span>
                     </div>
                 </div>
 
@@ -545,6 +717,19 @@
                         <strong>Wishlist:</strong> lo que quieres comprar<br>
                         <strong>Libros:</strong> tu lista de lectura<br>
                         <a href="wishlist.html" style="color: #00ccff; text-decoration: none;">Ver lista completa →</a>
+                    </div>
+                </div>
+                <!-- TARJETA 7: CALENDARIO -->
+                <div class="card card-calendario">
+                    <div class="gcal-header">
+                        <div>
+                            <div class="card-icon">📅</div>
+                            <div class="card-title">Calendario</div>
+                        </div>
+                        <a class="gcal-link-btn" href="https://calendar.google.com" target="_blank" rel="noopener" title="Abrir Google Calendar">&#128197;</a>
+                    </div>
+                    <div class="card-content" id="calendario-content">
+                        <span class="sk sk-line"></span><span class="sk sk-line sk-short"></span><span class="sk sk-line"></span>
                     </div>
                 </div>
             </div>
@@ -737,7 +922,7 @@
                 const { data, error } = await mySupabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.origin + '/Final.html'
+                        redirectTo: 'https://org-sabe-web.vercel.app/'
                     }
                 });
 
@@ -775,12 +960,133 @@
         let viajesMiGasto = 0;
         let viajesTotal = 0;
 
+        // ── GOOGLE CALENDAR ──────────────────────────────────────
+        // ⚠️ Reemplaza este valor con tu Client ID de Google Cloud Console
+        // Instrucciones en: google_calendar_schema.sql
+        const GCAL_CLIENT_ID = '473052005526-g1f1ruukr2t7fatlpnes0797smhfi94d.apps.googleusercontent.com';
+
+        const GCAL_COLORS = {
+          '1':'#D50000','2':'#E67C73','3':'#F4511E','4':'#F6BF26',
+          '5':'#33B679','6':'#0B8043','7':'#039BE5','8':'#3F51B5',
+          '9':'#7986CB','10':'#8D24AA','11':'#616161'
+        };
+        const GCAL_RANDOM = ['#E91E63','#9C27B0','#FF5722','#009688','#FF9800','#3F51B5','#0288D1','#388E3C'];
+        const _gcalColorMap = {};
+
+        function _gcalEventColor(ev) {
+          if (ev.colorId && GCAL_COLORS[ev.colorId]) return GCAL_COLORS[ev.colorId];
+          if (!_gcalColorMap[ev.id]) {
+            _gcalColorMap[ev.id] = GCAL_RANDOM[Object.keys(_gcalColorMap).length % GCAL_RANDOM.length];
+          }
+          return _gcalColorMap[ev.id];
+        }
+
+        function _gcalFormatDate(dt) {
+          if (!dt) return '';
+          const d = new Date(dt.includes('T') ? dt : dt + 'T00:00:00');
+          const dias  = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+          const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+          let s = dias[d.getDay()] + ' ' + d.getDate() + ' ' + meses[d.getMonth()];
+          if (dt.includes('T')) s += ' · ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+          return s;
+        }
+
+        function connectGoogleCalendar() {
+          if (GCAL_CLIENT_ID.startsWith('TU_CLIENT_ID')) {
+            alert('⚠️ Configura tu Google Client ID en Final.html (busca GCAL_CLIENT_ID). Lee las instrucciones en google_calendar_schema.sql');
+            return;
+          }
+          // Cargar GIS solo cuando el usuario lo necesite (evita conflictos con login)
+          if (typeof google === 'undefined' || !google?.accounts?.oauth2) {
+            const s = document.createElement('script');
+            s.src = 'https://accounts.google.com/gsi/client';
+            s.onload = () => _initGCalOAuth();
+            s.onerror = () => alert('No se pudo cargar Google Identity Services. Verifica tu conexión.');
+            document.head.appendChild(s);
+          } else {
+            _initGCalOAuth();
+          }
+        }
+
+        function _initGCalOAuth() {
+          try {
+            const client = google.accounts.oauth2.initTokenClient({
+              client_id: GCAL_CLIENT_ID,
+              scope: 'https://www.googleapis.com/auth/calendar.readonly',
+              callback: (r) => {
+                if (r.access_token) {
+                  localStorage.setItem('gcal_token', r.access_token);
+                  localStorage.setItem('gcal_token_exp', Date.now() + (r.expires_in - 60) * 1000);
+                  loadCalendarEvents();
+                }
+              }
+            });
+            client.requestAccessToken();
+          } catch(e) {
+            console.error('Google Identity Services no disponible', e);
+          }
+        }
+
+        function disconnectGoogleCalendar() {
+          localStorage.removeItem('gcal_token');
+          localStorage.removeItem('gcal_token_exp');
+          _showGCalConnect();
+        }
+
+        function _showGCalConnect() {
+          const el = document.getElementById('calendario-content');
+          if (!el) return;
+          el.innerHTML = '<small style="color:#888;display:block;margin-bottom:10px;">Conecta tu Google Calendar para ver tus próximos eventos.</small>' +
+            '<button class="gcal-connect-btn" onclick="connectGoogleCalendar()">' +
+            '<svg width="16" height="16" viewBox="0 0 48 48" fill="none"><path d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z" fill="white"/></svg>' +
+            'Conectar Google Calendar' +
+            '</button>';
+        }
+
+        async function loadCalendarEvents() {
+          const token = localStorage.getItem('gcal_token');
+          const exp   = parseInt(localStorage.getItem('gcal_token_exp') || '0');
+          if (!token || Date.now() > exp) { _showGCalConnect(); return; }
+
+          document.getElementById('calendario-content').innerHTML =
+            '<span class="sk sk-line"></span><span class="sk sk-line sk-short"></span><span class="sk sk-line"></span>';
+
+          try {
+            const res = await fetch(
+              'https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=' +
+              new Date().toISOString() + '&maxResults=3&singleEvents=true&orderBy=startTime',
+              { headers: { Authorization: 'Bearer ' + token } }
+            );
+            if (!res.ok) { localStorage.removeItem('gcal_token'); _showGCalConnect(); return; }
+            const data = await res.json();
+            const events = data.items || [];
+            const el = document.getElementById('calendario-content');
+            if (!el) return;
+            if (!events.length) {
+              el.innerHTML = '<small style="color:#999;">No hay eventos próximos — ¡todo libre! 🎉</small>';
+              return;
+            }
+            el.innerHTML = events.map(ev => {
+              const color = _gcalEventColor(ev);
+              const dt    = ev.start?.dateTime || ev.start?.date || '';
+              return '<div class="gcal-event">' +
+                '<div class="gcal-dot" style="background:' + color + '"></div>' +
+                '<div><div class="gcal-name">' + (ev.summary || '(Sin título)') + '</div>' +
+                '<div class="gcal-date">' + _gcalFormatDate(dt) + '</div></div>' +
+                '</div>';
+            }).join('') +
+            '<button class="gcal-disconnect" onclick="disconnectGoogleCalendar()">Desconectar</button>';
+          } catch(e) {
+            _showGCalConnect();
+          }
+        }
+
         function formatNumber(n) {
             if (typeof n === 'string') {
                 n = parseFloat(n.replace(/[^0-9,-]+/g,"").replace(",", ".")) || 0;
             }
             if (typeof n !== 'number') n = parseFloat(n) || 0;
-            return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return Math.round(n).toLocaleString('es-CL');
         }
 
         function calculateTotals() {
@@ -811,13 +1117,17 @@
 
         // CARGAR DATOS AL MOSTRAR DASHBOARD
         async function loadDashboardData() {
+            // Una sola llamada de auth compartida entre las 4 funciones
+            const { data: { user } } = await mySupabase.auth.getUser();
+            if (!user) return;
             await Promise.all([
-                loadComidas(),
-                loadDeudas(),
-                loadViajes(),
-                loadPlantasDashboard()
+                loadComidas(user),
+                loadDeudas(user),
+                loadViajes(user),
+                loadPlantasDashboard(user)
             ]);
             calculateTotals();
+            loadCalendarEvents(); // independiente de Supabase auth
         }
 
         // ESCUCHAR CAMBIOS DE AUTENTICACIÓN
@@ -831,9 +1141,9 @@
         });
 
         // FUNCIONES PARA CARGAR DATOS DE TARJETAS
-        async function loadViajes() {
+        async function loadViajes(user) {
             try {
-                const { data: { user } } = await mySupabase.auth.getUser();
+                if (!user) { const r = await mySupabase.auth.getUser(); user = r.data.user; }
                 if (!user) return;
 
                 const { data: trips, error: tripsError } = await mySupabase
@@ -922,9 +1232,9 @@
             }
         }
 
-        async function loadPlantasDashboard() {
+        async function loadPlantasDashboard(user) {
             try {
-                const { data: { user } } = await mySupabase.auth.getUser();
+                if (!user) { const r = await mySupabase.auth.getUser(); user = r.data.user; }
                 if (!user) return;
 
                 const { data: plantas } = await mySupabase
@@ -957,15 +1267,15 @@
             }
         }
 
-        async function loadComidas() {
+        async function loadComidas(user) {
             try {
-                const user = await mySupabase.auth.getUser();
-                if (!user.data.user) return;
+                if (!user) { const r = await mySupabase.auth.getUser(); user = r.data.user; }
+                if (!user?.id) return;
 
                 const { data: meals } = await mySupabase
                     .from('meals')
                     .select('*')
-                    .eq('user_id', user.data.user.id)
+                    .eq('user_id', user.id)
                     .order('created_at', { ascending: false });
 
                 if (!meals || meals.length === 0) {
@@ -1004,41 +1314,71 @@
             }
         }
 
-        async function loadDeudas() {
+        async function loadDeudas(user) {
             try {
-                const user = await mySupabase.auth.getUser();
-                if (!user.data.user) return;
+                if (!user) { const r = await mySupabase.auth.getUser(); user = r.data.user; }
+                if (!user?.id) return;
 
-                const { data: debts } = await mySupabase
-                    .from('debts')
-                    .select('*')
-                    .eq('user_id', user.data.user.id);
-
-                const { data: installments } = await mySupabase
-                    .from('installments')
-                    .select('*')
-                    .eq('paid', false);
+                // Ambas queries en paralelo
+                const [{ data: debts }, { data: installments }] = await Promise.all([
+                    mySupabase.from('debts').select('*').eq('user_id', user.id),
+                    mySupabase.from('installments').select('*')
+                ]);
 
                 if (!debts || debts.length === 0) {
                     document.getElementById('deudas-content').innerHTML = '<strong>Estado:</strong> Sin deudas activas<br><small style="color: #999;">¡Felicidades!</small>';
                     return;
                 }
 
-                const totalDeudas = debts.reduce((sum, d) => sum + parseFloat(d.total_amount), 0);
-                const cuotasPendientes = installments ? installments.filter(i => 
-                    debts.some(d => d.id === i.debt_id)
-                ).length : 0;
+                // Total del mes actual — misma lógica que resumen-global.html
+                const now = new Date();
+                let totalMes = 0;
+                const categoryIds = new Set();
+
+                debts.forEach(debt => {
+                    if (debt.category_id) categoryIds.add(debt.category_id);
+                    const start = new Date(debt.start_date + 'T00:00:00'); // local time para evitar desfase UTC
+                    const diffMonths = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+                    if (diffMonths >= 0 && diffMonths < debt.num_installments) {
+                        const inst = (installments || []).find(i => i.debt_id === debt.id && i.month_number === diffMonths);
+                        // Si no hay cuota registrada para ese mes, suma $0 (igual que resumen-global)
+                        if (inst && inst.paid !== true) totalMes += parseFloat(inst.amount || 0);
+                    }
+                });
+
+                const numCategorias = categoryIds.size || debts.length;
+                const totalDeudas = debts.reduce((sum, d) => sum + parseFloat(d.total_amount || 0), 0);
 
                 document.getElementById('deudas-content').innerHTML = `
-                    <strong>Deudas Activas:</strong> ${debts.length}<br>
+                    <strong>A pagar este mes:</strong> $${formatNumber(totalMes)}<br>
                     <strong>Total Adeudado:</strong> $${formatNumber(totalDeudas)}<br>
-                    <small style="color: #999;">${cuotasPendientes} cuotas pendientes</small>
+                    <small style="color: #999;">${numCategorias} categoría${numCategorias !== 1 ? 's' : ''}</small>
                 `;
             } catch (e) {
                 console.error('Error cargando deudas:', e);
             }
         }
     </script>
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav"><a href="Final.html" class="bn-item"><span class="bn-icon">🏠</span><span class="bn-label">Inicio</span></a><a href="resumen-global.html" class="bn-item"><span class="bn-icon">📊</span><span class="bn-label">Finanzas</span></a><a href="comidas.html" class="bn-item"><span class="bn-icon">🍽️</span><span class="bn-label">Comidas</span></a><a href="viajes.html" class="bn-item"><span class="bn-icon">✈️</span><span class="bn-label">Viajes</span></a><a href="deudas-tc.html" class="bn-item"><span class="bn-icon">💳</span><span class="bn-label">Deudas</span></a><a href="plantas.html" class="bn-item"><span class="bn-icon">🌿</span><span class="bn-label">Plantas</span></a><a href="wishlist.html" class="bn-item"><span class="bn-icon">🛍️</span><span class="bn-label">Lista</span></a></nav>
+<script>
+(function startClock() {
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  function tick() {
+    const el = document.getElementById('navbar-datetime');
+    if (!el) return;
+    const now = new Date();
+    const dia = dias[now.getDay()];
+    const fecha = now.getDate() + ' ' + meses[now.getMonth()] + ' ' + now.getFullYear();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    el.innerHTML = '<span>' + dia + ' ' + now.getDate() + ' ' + meses[now.getMonth()] + ' ' + now.getFullYear() + '</span><span>' + hh + ':' + mm + '</span>';
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+<script>function toggleTheme(){var n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('org-theme',n);var b=document.getElementById('theme-toggle');if(b)b.textContent=n==='dark'?'☀️':'🌙';}(function(){var t=localStorage.getItem('org-theme');if(t)document.documentElement.setAttribute('data-theme',t);var b=document.getElementById('theme-toggle');if(b)b.textContent=(document.documentElement.getAttribute('data-theme')||'light')==='dark'?'☀️':'🌙';var p=(window.location.pathname.split('/').pop()||'Final.html');document.querySelectorAll('.bn-item').forEach(function(a){if((a.getAttribute('href')||'').split('/').pop()===p)a.classList.add('active');});})();</script>
 </body>
-</html>
 </html>
