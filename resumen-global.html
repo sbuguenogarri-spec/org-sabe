@@ -2,27 +2,31 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <link rel="preconnect" href="https://vfqjcyecqecfrevmnivy.supabase.co">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resumen Global - org.BASE</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: "Poppins", sans-serif; background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%); min-height: 100vh; color: #001a4d; }
-    .navbar { background: linear-gradient(135deg, #001a4d 0%, #003d99 100%); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,26,77,0.3); position: sticky; top: 0; z-index: 100; }
+    html { overflow-x: hidden; }
+    body { font-family: "Poppins", sans-serif; background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%); min-height: 100vh; color: #001a4d; overflow-x: hidden; }
+    .navbar { background: linear-gradient(135deg, #001a4d 0%, #003d99 100%); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,26,77,0.3); position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 12px; }
     .logo { font-size: 38px; font-weight: 700; text-decoration: none; display: flex; align-items: stretch; align-self: stretch; margin: -16px 0 -16px -32px; }
-    .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: #e6f0ff; color: #0066cc; border: 2px solid #99ccff; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none; cursor: pointer; transition: all .2s; white-space: nowrap; }
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: white; color: #0066cc; border: 2px solid #0066cc; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none; cursor: pointer; transition: all 0.3s ease; white-space: nowrap; }
     .back-btn:hover { background: #0066cc; color: white; }
     .navbar-right { display: flex; align-items: center; gap: 16px; }
     .welcome-text { color: white; font-size: 14px; }
-    .logout-btn { padding: 8px 16px; background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; }
+    .logout-btn { padding: 8px 16px; background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.3s ease; }
     .profile-icon { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
     .btn-config { padding: 8px 16px; background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
-    .container { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+    .container { padding: 24px 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
     .page-title { font-size: 26px; font-weight: 700; color: #001a4d; margin-bottom: 4px; }
-    .page-subtitle { font-size: 13px; color: #667; margin-bottom: 24px; }
+    .page-subtitle { font-size: 13px; color: #0066cc; margin-bottom: 24px; }
     .summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-    .sum-card { background: white; border-radius: 12px; padding: 18px 20px; box-shadow: 0 4px 16px rgba(0,26,77,0.08); border-top: 4px solid #003d99; }
+    .sum-card { background: white; border-radius: 16px; padding: 18px 20px; box-shadow: 0 4px 16px rgba(0,26,77,0.08); border-top: 4px solid #003d99; transition: transform 0.3s ease, box-shadow 0.3s ease; }
     .sum-card.green { border-top-color: #22c55e; }
     .sum-card.red { border-top-color: #ef4444; }
     .sum-card.yellow{ border-top-color: #f59e0b; }
@@ -31,16 +35,16 @@
     .sum-value.green { color: #16a34a; }
     .sum-value.red { color: #dc2626; }
     .sum-value.yellow { color: #d97706; }
-    .table-section { background: white; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,26,77,0.08); overflow-x: auto; margin-bottom: 24px; position: relative; }
-    .table-header { padding: 16px 24px; border-bottom: 1px solid #eef; display: flex; align-items: center; justify-content: space-between; position: relative; height: 60px; }
+    .table-section { background: white; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,26,77,0.08); overflow-x: auto; margin-bottom: 24px; position: relative; }
+    .table-header { padding: 14px 24px; border-bottom: 1px solid #eef; display: flex; align-items: center; justify-content: space-between; position: relative; min-height: 68px; flex-wrap: wrap; gap: 8px; }
     .table-title { font-size: 15px; font-weight: 700; color: #001a4d; }
-    .month-nav { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.98); border-radius: 8px; padding: 6px 8px; display: flex; align-items: center; gap: 4px; z-index: 10; box-shadow: 0 2px 8px rgba(0,26,77,0.12); }
-    .nav-arrow { background: #f0f4ff; border: 1px solid #dde; border-radius: 4px; width: 24px; height: 24px; cursor: pointer; font-size: 13px; color: #003d99; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0; }
-    .nav-arrow:hover { background: #e0ebff; border-color: #003d99; }
-    .month-tabs { display: flex; gap: 3px; }
-    .month-tab { padding: 4px 8px; border-radius: 6px; border: 1px solid #dde; background: white; cursor: pointer; font-size: 10px; font-weight: 600; color: #667; white-space: nowrap; transition: all 0.1s; }
-    .month-tab:hover { border-color: #003d99; color: #003d99; }
-    .month-tab.active { background: #003d99; border-color: #003d99; color: white; }
+    .month-nav { background: #f0f5ff; border-radius: 12px; padding: 6px 8px; display: flex; align-items: center; gap: 6px; z-index: 10; box-shadow: 0 2px 10px rgba(0,26,77,0.1); border: 1px solid #dde8ff; }
+    .nav-arrow { background: white; border: 1.5px solid #c8d8ff; border-radius: 7px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; color: #003d99; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0; transition: all 0.2s; flex-shrink: 0; }
+    .nav-arrow:hover { background: #003d99; border-color: #003d99; color: white; box-shadow: 0 2px 8px rgba(0,61,153,0.25); }
+    .month-tabs { display: flex; gap: 4px; }
+    .month-tab { padding: 7px 16px; border-radius: 8px; border: 1.5px solid #c8d8ff; background: white; cursor: pointer; font-size: 12px; font-weight: 600; color: #557; white-space: nowrap; transition: all 0.2s; font-family: Poppins; }
+    .month-tab:hover { border-color: #003d99; color: #003d99; background: #eef3ff; }
+    .month-tab.active { background: linear-gradient(135deg, #003d99 0%, #0055cc 100%); border-color: #003d99; color: white; box-shadow: 0 2px 10px rgba(0,61,153,0.3); }
     table { width: 100%; border-collapse: collapse; }
     td { padding: 10px 14px; font-size: 12px; border-bottom: 1px solid #f0f4ff; border-right: 1px solid #dde8ff; }
     td:last-child { border-right: none; }
@@ -64,21 +68,182 @@
     .var-input-monto { padding: 6px 8px; border: 1px solid #a7f3d0; border-radius: 4px; font-size: 12px; flex: 0 0 80px; }
     .var-btn { padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; }
     .var-btn:hover { background: #059669; }
+    .rename-btn { opacity: 0; background: none; border: none; cursor: pointer; padding: 3px 4px; border-radius: 5px; color: #6699cc; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-left: 5px; transition: opacity .15s, background .15s, color .15s; line-height: 1; }
+    tr:hover .rename-btn { opacity: 1; }
+    .rename-btn:hover { background: #e8f0ff; color: #003d99; }
+    .del-btn { color: #f87171 !important; }
+    .del-btn:hover { background: #fee2e2 !important; color: #dc2626 !important; }
+    /* ── TOAST ─────────────────────────────────────── */
+    .rg-toast { position:fixed; bottom:28px; right:28px; padding:11px 20px; border-radius:10px; font-size:13px; font-weight:600; color:white; z-index:3000; box-shadow:0 6px 20px rgba(0,0,0,0.18); transform:translateX(130%); transition:transform .35s cubic-bezier(0.4,0,0.2,1); font-family:'Poppins',sans-serif; }
+    .rg-toast.show { transform:translateX(0); }
+    .rg-toast.ok  { background:linear-gradient(135deg,#16a34a,#15803d); }
+    .rg-toast.err { background:linear-gradient(135deg,#dc2626,#b91c1c); }
+    /* ── SKELETON SCREENS ──────────────────────────── */
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .sk { background: linear-gradient(90deg,#e8edf5 25%,#f0f4ff 50%,#e8edf5 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite; border-radius: 6px; }
+    .sk-line { height: 13px; margin-bottom: 10px; }
+    .sk-title { height: 18px; width: 55%; margin-bottom: 14px; }
+    .sk-short { width: 38%; }
+    .sk-card { background: white; border-radius: 16px; padding: 22px; box-shadow: 0 4px 16px rgba(0,26,77,0.08); border-top: 4px solid #e8edf5; }
+    /* ── HOVER EFFECTS ───────────────────────── */
+    .logout-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255,107,107,0.35); }
+    .sum-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,26,77,0.14); }
+    /* ── RESPONSIVE ─────────────────────────── */
+    @media (max-width: 1100px) {
+      .summary-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 700px) {
+      .navbar { padding: 12px 16px; }
+      .logo { margin: -12px 0 -12px -16px !important; }
+      .welcome-text { display: none; }
+      .container { padding: 12px 14px; }
+      .summary-cards { grid-template-columns: 1fr; }
+      .sum-value { font-size: 18px; }
+      .page-title { font-size: 20px; }
+      td { padding: 7px 8px; font-size: 11px; }
+      td:first-child { width: 130px !important; }
+      td:not(:first-child) { min-width: 0 !important; max-width: none !important; width: auto !important; }
+    }
+    /* ── BOTTOM NAV (mobile) ─────────────────────────────── */
+    .bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #dde8ff; z-index:500; padding:6px 0 max(6px,env(safe-area-inset-bottom)); box-shadow:0 -4px 16px rgba(0,26,77,0.1); }
+    @media(max-width:768px){ .bottom-nav{display:flex;justify-content:space-around;} body{padding-bottom:68px!important;} }
+    .bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#99a;padding:4px 6px;border-radius:8px;transition:color .2s;min-width:40px;}
+    .bn-item.active,.bn-item:hover{color:#003d99;} .bn-icon{font-size:18px;line-height:1.2;} .bn-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;font-family:'Poppins',sans-serif;}
+    /* ══════════════════════════════════════════════════════════════
+       MODO OSCURO — Rediseño completo
+    ══════════════════════════════════════════════════════════════ */
+    [data-theme=dark] { color-scheme: dark; }
+    [data-theme=dark] body { background: linear-gradient(135deg,#0d1117 0%,#161b22 100%) !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .navbar { background: linear-gradient(135deg,#080d18 0%,#0d1a33 100%) !important; }
+
+    /* Cards / secciones */
+    [data-theme=dark] .card,[data-theme=dark] .sum-card,[data-theme=dark] .table-section,
+    [data-theme=dark] .login-card,[data-theme=dark] .plant-card,[data-theme=dark] .trip-card,
+    [data-theme=dark] .category-section,[data-theme=dark] .summary-section,[data-theme=dark] .panel,
+    [data-theme=dark] .section,[data-theme=dark] .page-header,[data-theme=dark] .modal-content,
+    [data-theme=dark] .sk-card,[data-theme=dark] .sk-plant-card,[data-theme=dark] .info-card,
+    [data-theme=dark] .stat-chip,[data-theme=dark] .installment-card,[data-theme=dark] .add-form,
+    [data-theme=dark] .person-section,[data-theme=dark] .transfer-section,[data-theme=dark] .footer,
+    [data-theme=dark] .items-container,[data-theme=dark] .table-wrapper,[data-theme=dark] .participants-container,
+    [data-theme=dark] .checkboxes-group,[data-theme=dark] .installments-content {
+      background: #1e2a3d !important; color: #c9d1d9 !important; border-color: #2d3748 !important;
+    }
+
+    /* Texto principal */
+    [data-theme=dark] h1,[data-theme=dark] h2,[data-theme=dark] h3,[data-theme=dark] h4,
+    [data-theme=dark] .page-title,[data-theme=dark] .card-title,[data-theme=dark] .panel-title,
+    [data-theme=dark] .section-title,[data-theme=dark] .trip-title,[data-theme=dark] .card-nombre,
+    [data-theme=dark] .card-content,[data-theme=dark] .modal-header,[data-theme=dark] .summary-title,
+    [data-theme=dark] .category-name,[data-theme=dark] .debt-detail,[data-theme=dark] .info-label,
+    [data-theme=dark] .form-label { color: #c9d1d9 !important; }
+
+    [data-theme=dark] .page-subtitle,[data-theme=dark] .sum-label,[data-theme=dark] .welcome-text,
+    [data-theme=dark] .card-info,[data-theme=dark] .stat-label,[data-theme=dark] .card-notas,
+    [data-theme=dark] .section-label,[data-theme=dark] label,[data-theme=dark] .month-display,
+    [data-theme=dark] .installment-month { color: #8b9ab7 !important; }
+
+    /* Inputs / forms */
+    [data-theme=dark] input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]),
+    [data-theme=dark] select,[data-theme=dark] textarea {
+      background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important;
+    }
+    [data-theme=dark] input::placeholder,[data-theme=dark] textarea::placeholder { color: #4d6080 !important; }
+    [data-theme=dark] .form-group input:focus,[data-theme=dark] .form-group select:focus,
+    [data-theme=dark] .form-group textarea:focus { box-shadow: 0 0 8px rgba(77,148,255,0.2) !important; }
+
+    /* Tablas */
+    [data-theme=dark] td { border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] tr.header-row td { background: #1a2535 !important; color: #7b96c0 !important; }
+    [data-theme=dark] tr.sec-header td { background: #162033 !important; color: #8badd0 !important; }
+    [data-theme=dark] tr.total-row td  { background: #182030 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] tr.balance-row   { background: #162d1a !important; }
+    [data-theme=dark] tr.balance-row td { color: #4ade80 !important; }
+    [data-theme=dark] .input-cell input { color: #f87171 !important; background: transparent !important; }
+    [data-theme=dark] .summary-table th { background: #1a2535 !important; color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .summary-table td { background: #1e2a3d !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .summary-table tr:hover td { background: #243347 !important; }
+    [data-theme=dark] .debts-table th  { background: #1a2535 !important; color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .debts-table td  { border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .debts-table tr:hover { background: #243347 !important; }
+    [data-theme=dark] .meal-table thead { background: #1a2535 !important; }
+    [data-theme=dark] .meal-table th { color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .meal-table td { border-color: #2d3748 !important; }
+    [data-theme=dark] .meal-table td:nth-child(1),[data-theme=dark] .meal-table td:nth-child(2) { background: #1a2535 !important; }
+    [data-theme=dark] .meal-table tbody tr:hover td { background: #1f2e42 !important; }
+    [data-theme=dark] .totals-row { background: #1a2535 !important; }
+
+    /* Navegador de meses */
+    [data-theme=dark] .month-nav { background: #162033 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .month-tab { background: #1a2535 !important; border-color: #2d3748 !important; color: #8b9ab7 !important; }
+    [data-theme=dark] .month-tab:hover { background: #1e2a3d !important; border-color: #4d6080 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .month-tab.active { background: linear-gradient(135deg,#003d99 0%,#0055cc 100%) !important; border-color: #003d99 !important; color: white !important; }
+    [data-theme=dark] .nav-arrow { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .nav-arrow:hover { background: #003d99 !important; color: white !important; border-color: #003d99 !important; }
+    [data-theme=dark] .table-header { border-bottom-color: #2d3748 !important; }
+
+    /* Botones */
+    [data-theme=dark] .back-btn { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .back-btn:hover { background: #2d3e55 !important; color: white !important; }
+    [data-theme=dark] .btn-cancel,[data-theme=dark] .btn-cancelar { background: #2d3748 !important; color: #c9d1d9 !important; border-color: #3d4f66 !important; }
+    [data-theme=dark] .btn-action { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .btn-action:hover { background: #2d3e55 !important; }
+    [data-theme=dark] .btn-config { background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.2) !important; }
+    [data-theme=dark] .month-nav-btn { background: #2d3e55 !important; }
+
+    /* Barra inferior */
+    [data-theme=dark] .bottom-nav { background: #0d1117 !important; border-top-color: #2d3748 !important; }
+    [data-theme=dark] .bn-item { color: #4d6080 !important; }
+    [data-theme=dark] .bn-item.active,[data-theme=dark] .bn-item:hover { color: #4d94ff !important; }
+
+    /* Skeleton */
+    [data-theme=dark] .sk { background: linear-gradient(90deg,#1a2535 25%,#1e2a3d 50%,#1a2535 75%) !important; background-size: 200% 100% !important; }
+
+    /* Misceláneos */
+    [data-theme=dark] .installment-amount,[data-theme=dark] .stat-value,[data-theme=dark] .info-value { color: #4d94ff !important; }
+    [data-theme=dark] .expand-btn { color: #4d94ff !important; }
+    [data-theme=dark] .panel-header { border-bottom-color: #2d3748 !important; }
+    [data-theme=dark] .items-container::-webkit-scrollbar-track { background: #162030; }
+    [data-theme=dark] .items-container::-webkit-scrollbar-thumb { background: #2d3748; }
+    [data-theme=dark] .card-img-wrap { background: linear-gradient(135deg,#162033,#1e2a3d) !important; }
+    [data-theme=dark] .status-badge.badge-ok { background: #162d1a !important; color: #4ade80 !important; }
+    [data-theme=dark] .installments-row { background: #162030 !important; }
+    [data-theme=dark] .category-color-dot { box-shadow: 0 0 0 2px #2d3748; }
+    [data-theme=dark] .add-category-input,[data-theme=dark] .add-category-row input { background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .var-popup-title { color: #c9d1d9 !important; }
+    [data-theme=dark] #var-detail-popup { background: #1e2a3d !important; box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important; }
+    [data-theme=dark] .divider { color: #4d6080 !important; }
+    [data-theme=dark] .links a { color: #4d94ff !important; }
+    [data-theme=dark] .google-btn { background: #1e2a3d !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .person-tag { border-color: #2d3748 !important; }
+    [data-theme=dark] .circle-btn { background: #1e2a3d !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .circle-btn.active { background: #0066cc !important; }
+    [data-theme=dark] .table-input-small { background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .add-dish-row-in-wrapper { background: #162030 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] #topMonthNavPlaceholder { background: transparent !important; }
   </style>
 </head>
 <body>
 <nav class="navbar">
   <a href="Final.html" class="logo"><span style="background:white;-webkit-text-fill-color:#001a4d;font-weight:700;padding:0 12px 0 32px;display:flex;align-items:center;margin-right:-8px;">org</span><span style="display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0;align-self:center;flex-shrink:0;position:relative;z-index:1;"></span><span style="-webkit-text-fill-color:white;font-weight:700;align-self:center;padding-left:8px;">BASE</span></a>
   <div class="navbar-right">
-    <span class="welcome-text" id="welcomeText"></span>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;"><span class="welcome-text" id="welcomeText"></span><span id="navbar-datetime" style="font-size:11px;color:rgba(255,255,255,0.65);font-family:'Poppins',sans-serif;letter-spacing:0.2px;display:flex;gap:12px;"></span></div>
     <button class="logout-btn" onclick="handleLogout()">Cerrar sesión</button>
-    <div class="profile-icon" id="profileIcon">S</div>
+    <button id="theme-toggle" onclick="toggleTheme()" title="Modo oscuro/claro" style="background:none;border:none;cursor:pointer;font-size:19px;padding:4px 6px;border-radius:8px;transition:background .2s;line-height:1;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='none'">🌙</button>
+  <div class="profile-icon" id="profileIcon">S</div>
   </div>
 </nav>
+<div id="rg-toast" class="rg-toast"></div>
 <div class="container">
-  <div style="margin-bottom:20px;"><a href="Final.html" class="back-btn">← Volver</a></div>
-  <div class="page-title">📊 Resumen Global</div>
-  <div class="page-subtitle">Flujo de caja consolidado — 4 meses en paralelo</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a href="Final.html" class="back-btn">← Volver</a>
+      <div>
+        <div class="page-title">📊 Resumen Global</div>
+        <div class="page-subtitle">Flujo de caja consolidado — 4 meses en paralelo</div>
+      </div>
+    </div>
+    <div id="top-month-nav"></div>
+  </div>
   <div class="summary-cards">
     <div class="sum-card green"><div class="sum-label">Ingresos del mes</div><div class="sum-value green" id="card-ingresos">$0</div></div>
     <div class="sum-card red"><div class="sum-label">Egresos del mes</div><div class="sum-value red" id="card-egresos">$0</div></div>
@@ -100,7 +265,10 @@
     </div>
   </div>
   <div class="table-section" id="cashFlowSection">
-    <div style="text-align:center;padding:48px;color:#99a;">Cargando...</div>
+    <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+      <div class="sk-card"><div class="sk sk-title"></div><div class="sk sk-line"></div><div class="sk sk-line sk-short"></div><div class="sk sk-line"></div><div class="sk sk-line sk-short"></div><div class="sk sk-line"></div></div>
+      <div class="sk-card"><div class="sk sk-title"></div><div class="sk sk-line"></div><div class="sk sk-line sk-short"></div><div class="sk sk-line"></div></div>
+    </div>
   </div>
 </div>
 
@@ -132,6 +300,7 @@
 
   let currentUser = null;
   let ufValue = 38000;
+  const DEFAULT_FIXED_CATS = ['Arriendo/Dividendo','Luz','Agua','Internet','Celular','Gastos Comunes'];
   let fixedCategories = ['Arriendo/Dividendo','Luz','Agua','Internet','Celular','Gastos Comunes'];
   let varCategories = ['Supermercado','Transporte','Salud','Ropa','Entretenimiento','Otro'];
   let selectedMonth = '2026-06';
@@ -170,6 +339,21 @@
     return parseFloat(str.toString().replace(/[$\.\s]/g,'').replace(',','.')) || 0;
   }
 
+  // ── Utilidades UI ──────────────────────────────────────
+  let _toastTimer;
+  function rgToast(msg, ok = true) {
+    const el = document.getElementById('rg-toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'rg-toast ' + (ok ? 'ok' : 'err');
+    el.classList.add('show');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
   function initVisibleMonths() {
     const idx = allMonths.indexOf(selectedMonth);
     visibleMonths = allMonths.slice(idx, idx + 4);
@@ -197,6 +381,7 @@
 
   async function init() {
     try { await loadConfig(); } catch(e) { console.warn(e); }
+    loadFixedCategories();
     loadArrSubcats();
     try { await loadAll(); } catch(e) { console.warn(e); }
     try { loadBalanceTotal(); } catch(e) { console.warn(e); }
@@ -213,6 +398,33 @@
       if (data) { ufValue = parseFloat(data.uf_value) || 38000; }
     } catch(e) {}
     document.getElementById('card-uf').textContent = formatNum(ufValue);
+  }
+
+  // Cache TTL de 3 minutos para datos de resumen
+  const _CACHE_TTL = 3 * 60 * 1000;
+  function _cacheKey(m) { return 'rg_' + currentUser.id + '_' + m; }
+  function _cacheGet(m) {
+    try {
+      const raw = sessionStorage.getItem(_cacheKey(m));
+      if (!raw) return null;
+      const { ts, data } = JSON.parse(raw);
+      if (Date.now() - ts > _CACHE_TTL) { sessionStorage.removeItem(_cacheKey(m)); return null; }
+      return data;
+    } catch(e) { return null; }
+  }
+  function _cacheSet(m, data) {
+    try { sessionStorage.setItem(_cacheKey(m), JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+  }
+  function invalidateCache(months) {
+    try {
+      if (months && months.length) {
+        // Invalidar solo los meses afectados (más eficiente)
+        months.forEach(m => sessionStorage.removeItem(_cacheKey(m)));
+      } else {
+        // Invalidar todo (ej: al renombrar categoría)
+        Object.keys(sessionStorage).filter(k => k.startsWith('rg_')).forEach(k => sessionStorage.removeItem(k));
+      }
+    } catch(e) {}
   }
 
   async function loadAll() {
@@ -307,8 +519,10 @@
       html += '<button class="month-tab ' + (m===selectedMonth?'active':'') + '" onclick="selectMonth(\'' + m + '\')">' + monthLabel(m) + '</button>';
     });
     html += '</div><button class="nav-arrow" onclick="scrollMonths(1)">›</button></div>';
+    const tnav = document.getElementById('top-month-nav');
+    if (tnav) tnav.innerHTML = html;
     const hdr = document.querySelector('.table-header');
-    if (hdr) hdr.innerHTML = '<span class="table-title">💵 Flujo de Caja — ' + monthLabel(selectedMonth) + '</span>' + html;
+    if (hdr) hdr.innerHTML = '<span class="table-title">💵 Flujo de Caja — ' + monthLabel(selectedMonth) + '</span>';
   }
 
   function scrollMonths(dir) {
@@ -326,6 +540,10 @@
     await loadAll();
     renderTable();
   }
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 600) applyMobileTableLayout();
+  });
 
   function renderTable() {
     if (!selectedMonth || !allData[selectedMonth]) return;
@@ -349,12 +567,7 @@
     const infoEl = document.getElementById('card-var-info');
     if (infoEl) infoEl.style.display = variable > 0 ? 'inline' : 'none';
 
-    let html = '<div class="table-header"><span class="table-title">💵 Flujo de Caja — ' + monthLabel(selectedMonth) + '</span>';
-    html += '<div class="month-nav"><button class="nav-arrow" onclick="scrollMonths(-1)">‹</button><div class="month-tabs">';
-    visibleMonths.forEach(m => {
-      html += '<button class="month-tab ' + (m===selectedMonth?'active':'') + '" onclick="selectMonth(\'' + m + '\')">' + monthLabel(m) + '</button>';
-    });
-    html += '</div><button class="nav-arrow" onclick="scrollMonths(1)">›</button></div></div><table><tbody>';
+    let html = '<div class="table-header"><span class="table-title">💵 Flujo de Caja — ' + monthLabel(selectedMonth) + '</span></div><table data-sel-col="' + (visibleMonths.indexOf(selectedMonth) + 2) + '"><tbody>';
     
     // Headers
     html += '<tr class="header-row"><td>CATEGORÍA</td>';
@@ -365,30 +578,38 @@
     
     // INGRESOS
     html += '<tr class="sec-header"><td colspan="' + (visibleMonths.length+1) + '"><span style="letter-spacing:3px;">💰 INGRESOS</span> <button onclick="toggleIncomeForm()" title="Agregar ingreso" style="margin-left:8px;padding:1px 7px;background:#16a34a;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700;line-height:1.4;">+</button></td></tr>';
-    // Fila inline para agregar ingreso
-    html += '<tr id="income-form-row" style="display:none;"><td style="padding:8px 14px;">';
-    html += '<input id="inc-desc" type="text" placeholder="Descripci\u00f3n" style="background:transparent;border:1px solid transparent;padding:4px 6px;font-size:12px;font-family:Poppins;color:#001a4d;width:160px;" onmouseover="this.style.borderColor=\'#a7f3d0\'" onmouseout="this.style.borderColor=\'transparent\'" onfocus="this.style.borderColor=\'#10b981\';this.style.background=\'#f0fff8\'" onblur="this.style.borderColor=\'transparent\';this.style.background=\'transparent\'">';
-    html += '<button onclick="toggleIncomeForm()" title="Cancelar" style="margin-left:6px;background:none;color:#bbb;border:none;cursor:pointer;font-size:15px;line-height:1;vertical-align:middle;">&times;</button>';
-    html += '</td>';
-    visibleMonths.forEach((m, idx) => {
-      if (m === selectedMonth) {
-        html += '<td style="padding:8px 14px;text-align:right;">';
-        html += '<input id="inc-monto" type="number" placeholder="Monto" min="0" style="background:transparent;border:1px solid transparent;padding:4px 6px;font-size:12px;font-family:Poppins;color:#16a34a;width:100px;text-align:right;" onmouseover="this.style.borderColor=\'#a7f3d0\'" onmouseout="this.style.borderColor=\'transparent\'" onfocus="this.style.borderColor=\'#10b981\';this.style.background=\'#f0fff8\'" onblur="saveIncomeAuto()" onkeydown="if(event.key===\'Enter\') this.blur();">';
-        html += '</td>';
-      } else {
-        html += '<td></td>';
-      }
-    });
-    html += '</tr>';
     const maxInc = Math.max(...visibleMonths.map(m => (allData[m].income || []).length || 0), 0);
     for (let i = 0; i < maxInc; i++) {
       html += '<tr><td></td>';
       visibleMonths.forEach(m => {
         const inc = (allData[m].income || [])[i];
-        html += '<td style="text-align:right;color:#16a34a;">' + (inc ? '<strong>' + inc.description + '</strong><br/>' + formatNum(inc.amount) : '') + '</td>';
+        if (inc) {
+          const escapedDesc = inc.description.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          html += '<td style="text-align:right;color:#16a34a;position:relative;">';
+          html += '<button class="rename-btn" style="position:absolute;left:4px;top:50%;transform:translateY(-50%);margin:0;" onclick="startEditIncome(\'' + inc.id + '\',\'' + escapedDesc + '\',' + inc.amount + ',this.closest(\'td\'))" title="Editar"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>';
+          html += '<button class="rename-btn del-btn" style="position:absolute;left:28px;top:50%;transform:translateY(-50%);margin:0;" onclick="deleteIncome(\'' + inc.id + '\')" title="Eliminar"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>';
+          html += '<strong>' + esc(inc.description) + '</strong><br/>' + formatNum(inc.amount);
+          html += '</td>';
+        } else {
+          html += '<td></td>';
+        }
       });
       html += '</tr>';
     }
+    // Fila de agregar ingreso (al final)
+    html += '<tr id="income-form-row" style="display:none;"><td></td>';
+    visibleMonths.forEach(m => {
+      if (m === selectedMonth) {
+        html += '<td style="text-align:right;padding:6px 14px;">';
+        html += '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">';
+        html += '<input id="inc-desc" type="text" placeholder="Nombre" style="background:#f0fff8;border:1px solid #10b981;border-radius:4px;padding:2px 6px;font-size:12px;font-family:Poppins;color:#001a4d;width:120px;text-align:right;" onkeydown="if(event.key===\'Enter\'){document.getElementById(\'inc-monto\').focus();document.getElementById(\'inc-monto\').select();}if(event.key===\'Escape\')toggleIncomeForm();" />';
+        html += '<input id="inc-monto" type="number" placeholder="Monto" min="0" style="background:#f0fff8;border:1px solid #10b981;border-radius:4px;padding:2px 6px;font-size:12px;font-family:Poppins;color:#16a34a;width:120px;text-align:right;" onblur="saveIncomeAuto()" onkeydown="if(event.key===\'Enter\')this.blur();if(event.key===\'Escape\')toggleIncomeForm();" />';
+        html += '</div></td>';
+      } else {
+        html += '<td></td>';
+      }
+    });
+    html += '</tr>';
     
     // Ingresos total
     html += '<tr class="total-row"><td>Total Ingresos</td>';
@@ -399,8 +620,8 @@
     html += '</tr>';
     
     // GASTOS FIJOS
-    html += '<tr class="sec-header"><td colspan="' + (visibleMonths.length+1) + '">🏠 GASTOS FIJOS</td></tr>';
-    fixedCategories.forEach(cat => {
+    html += '<tr class="sec-header"><td colspan="' + (visibleMonths.length+1) + '">🏠 GASTOS FIJOS <button onclick="addFixedCategory()" title="Agregar gasto fijo" style="margin-left:8px;padding:1px 7px;background:#16a34a;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700;line-height:1.4;">+</button></td></tr>';
+    fixedCategories.forEach((cat, catIdx) => {
       if (cat === 'Arriendo/Dividendo') {
         // Fila principal con botón +
         html += '<tr><td>' + cat + ' <button onclick="toggleArriendoForm()" title="Agregar subcategoría" style="margin-left:6px;padding:1px 7px;background:#003d99;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700;line-height:1.4;">+</button></td>';
@@ -451,10 +672,14 @@
           html += '</tr>';
         }
       } else {
-        html += '<tr><td>' + cat + '</td>';
+        const escapedCat = cat.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const isCustom = !DEFAULT_FIXED_CATS.includes(cat);
+        html += '<tr><td>';
+        if (isCustom) html += '<button onclick="deleteFixedCategory(\'' + escapedCat + '\')" title="Eliminar" style="margin-right:6px;background:none;color:#ccc;border:none;cursor:pointer;font-size:14px;line-height:1;vertical-align:middle;">&times;</button>';
+        html += '<span id="fixed-label-' + catIdx + '">' + cat + '</span><button class="rename-btn" onclick="startRenameFixed(' + catIdx + ',\'' + escapedCat + '\')" title="Renombrar nombre"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button></td>';
         visibleMonths.forEach(m => {
           const val = parseFloat(allData[m].fixed[cat]?.amount || 0);
-          html += '<td class="input-cell"><input type="text" value="' + (val>0?formatNum(val):'') + '" onkeydown="if(event.key===\'Enter\') this.blur();" onblur="saveFixed(\'' + cat + '\',\'' + m + '\',this.value)" /></td>';
+          html += '<td class="input-cell"><input type="text" value="' + (val>0?formatNum(val):'') + '" onkeydown="if(event.key===\'Enter\') this.blur();" onblur="saveFixed(\'' + escapedCat + '\',\'' + m + '\',this.value)" /></td>';
         });
         html += '</tr>';
       }
@@ -551,6 +776,35 @@
     html += '</tr></tbody></table>';
     
     document.getElementById('cashFlowSection').innerHTML = html;
+    applyMobileTableLayout();
+    // Actualizar nav de meses arriba del título
+    const _tnav = document.getElementById('top-month-nav');
+    if (_tnav) {
+      let _navHtml = '<div class="month-nav"><button class="nav-arrow" onclick="scrollMonths(-1)">‹</button><div class="month-tabs">';
+      visibleMonths.forEach(function(m) {
+        _navHtml += '<button class="month-tab ' + (m===selectedMonth?'active':'') + '" onclick="selectMonth(\'' + m + '\')">' + monthLabel(m) + '</button>';
+      });
+      _navHtml += '</div><button class="nav-arrow" onclick="scrollMonths(1)">›</button></div>';
+      _tnav.innerHTML = _navHtml;
+    }
+  }
+
+  function applyMobileTableLayout() {
+    if (window.innerWidth > 600) return;
+    const selIdx = visibleMonths.indexOf(selectedMonth);
+    const table = document.querySelector('#cashFlowSection table');
+    if (!table) return;
+    table.querySelectorAll('tr').forEach(row => {
+      const cells = row.querySelectorAll('td');
+      if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
+        cells[0].setAttribute('colspan', '2');
+      } else {
+        cells.forEach((td, i) => {
+          if (i > 0 && i !== selIdx + 1) td.style.display = 'none';
+          else td.style.display = '';
+        });
+      }
+    });
   }
 
   function loadArrSubcats() {
@@ -618,20 +872,140 @@
     renderTable();
   }
 
+  function loadFixedCategories() {
+    if (!currentUser) return;
+    const saved = localStorage.getItem('fixed_categories_' + currentUser.id);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.includes('Arriendo/Dividendo')) fixedCategories = parsed;
+      } catch(e) {}
+    }
+  }
+
+  function saveFixedCategoriesList() {
+    if (!currentUser) return;
+    localStorage.setItem('fixed_categories_' + currentUser.id, JSON.stringify(fixedCategories));
+  }
+
+  function addFixedCategory() {
+    let newName = '-';
+    let counter = 2;
+    while (fixedCategories.includes(newName)) { newName = '-' + counter++; }
+    fixedCategories.push(newName);
+    saveFixedCategoriesList();
+    renderTable();
+    const newIdx = fixedCategories.length - 1;
+    setTimeout(() => startRenameFixed(newIdx, newName), 0);
+  }
+
+  function deleteFixedCategory(cat) {
+    fixedCategories = fixedCategories.filter(c => c !== cat);
+    saveFixedCategoriesList();
+    renderTable();
+  }
+
+  function startRenameFixed(catIdx, catName) {
+    const span = document.getElementById('fixed-label-' + catIdx);
+    if (!span) return;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = catName;
+    input.style.cssText = 'background:#f0fff8;border:1px solid #10b981;border-radius:4px;padding:2px 6px;font-size:12px;font-family:Poppins;color:#001a4d;width:140px;';
+    let done = false;
+    input.onblur = () => { if (!done) { done = true; saveRenameFixed(catName, input.value.trim()); } };
+    input.onkeydown = (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+      if (e.key === 'Escape') { done = true; renderTable(); }
+    };
+    span.replaceWith(input);
+    input.focus();
+    input.select();
+  }
+
+  async function saveRenameFixed(oldName, newName) {
+    if (!newName || newName === oldName) { renderTable(); return; }
+    const idx = fixedCategories.indexOf(oldName);
+    if (idx === -1) { renderTable(); return; }
+    fixedCategories[idx] = newName;
+    saveFixedCategoriesList();
+    try {
+      await mySupabase.from('monthly_fixed_expenses')
+        .update({ category: newName })
+        .eq('user_id', currentUser.id)
+        .eq('category', oldName);
+    } catch(e) { console.warn(e); }
+    Object.keys(allData).forEach(m => {
+      if (allData[m].fixed[oldName] !== undefined) {
+        allData[m].fixed[newName] = { ...allData[m].fixed[oldName], category: newName };
+        delete allData[m].fixed[oldName];
+      }
+    });
+    renderTable();
+  }
+
+  function startEditIncome(incId, currentDesc, currentAmount, td) {
+    td.innerHTML =
+      '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;padding:2px 0;">' +
+      '<input type="text" value="' + currentDesc.replace(/"/g, '&quot;') + '" style="background:#f0fff8;border:1px solid #10b981;border-radius:4px;padding:2px 6px;font-size:12px;font-family:Poppins;color:#001a4d;width:120px;text-align:right;" />' +
+      '<input type="number" value="' + currentAmount + '" style="background:#f0fff8;border:1px solid #10b981;border-radius:4px;padding:2px 6px;font-size:12px;font-family:Poppins;color:#16a34a;width:120px;text-align:right;" />' +
+      '</div>';
+    const descInput = td.querySelectorAll('input')[0];
+    const montoInput = td.querySelectorAll('input')[1];
+    let done = false;
+    const save = async () => {
+      if (done) return;
+      done = true;
+      const newDesc = descInput.value.trim() || currentDesc;
+      const newAmt = parseAmount(montoInput.value) || parseAmount(String(currentAmount));
+      if (newDesc === currentDesc && newAmt === parseAmount(String(currentAmount))) { renderTable(); return; }
+      try { await mySupabase.from('monthly_income').update({ description: newDesc, amount: newAmt }).eq('id', incId); } catch(e) { console.warn(e); }
+      await loadAll();
+      renderTable();
+    };
+    descInput.onkeydown = (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); montoInput.focus(); montoInput.select(); }
+      if (e.key === 'Escape') { done = true; renderTable(); }
+    };
+    montoInput.onkeydown = (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); montoInput.blur(); }
+      if (e.key === 'Escape') { done = true; renderTable(); }
+    };
+    montoInput.onblur = save;
+    descInput.focus();
+    descInput.select();
+  }
+
+  async function deleteIncome(id) {
+    try {
+      await mySupabase.from('monthly_income').delete().eq('id', id);
+      invalidateCache();
+      Object.keys(allData).forEach(m => {
+        allData[m].income = (allData[m].income || []).filter(r => r.id !== id);
+      });
+      renderTable();
+      rgToast('✓ Ingreso eliminado');
+    } catch(e) { rgToast('Error al eliminar ingreso', false); }
+  }
+
   async function saveFixed(cat, m, val) {
     const amt = parseAmount(val);
-    try { await mySupabase.from('monthly_fixed_expenses').upsert({ user_id: currentUser.id, month: m, category: cat, amount: amt, is_manual_override: true }, { onConflict: 'user_id,month,category' }); } catch(e) {}
-    const idx = allMonths.indexOf(m);
-    if (idx !== -1) {
-      for (let i = idx + 1; i < allMonths.length; i++) {
-        try {
-          const { data: ex } = await mySupabase.from('monthly_fixed_expenses').select('is_manual_override').eq('user_id', currentUser.id).eq('month', allMonths[i]).eq('category', cat).single();
-          if (!ex || !ex.is_manual_override) {
-            await mySupabase.from('monthly_fixed_expenses').upsert({ user_id: currentUser.id, month: allMonths[i], category: cat, amount: amt, is_manual_override: false }, { onConflict: 'user_id,month,category' });
-          }
-        } catch(e) {}
+    invalidateCache([m]);
+    try {
+      await mySupabase.from('monthly_fixed_expenses').upsert({ user_id: currentUser.id, month: m, category: cat, amount: amt, is_manual_override: true }, { onConflict: 'user_id,month,category' });
+      const idx = allMonths.indexOf(m);
+      if (idx !== -1) {
+        for (let i = idx + 1; i < allMonths.length; i++) {
+          try {
+            const { data: ex } = await mySupabase.from('monthly_fixed_expenses').select('is_manual_override').eq('user_id', currentUser.id).eq('month', allMonths[i]).eq('category', cat).single();
+            if (!ex || !ex.is_manual_override) {
+              await mySupabase.from('monthly_fixed_expenses').upsert({ user_id: currentUser.id, month: allMonths[i], category: cat, amount: amt, is_manual_override: false }, { onConflict: 'user_id,month,category' });
+            }
+          } catch(e) {}
+        }
       }
-    }
+      rgToast('✓ Guardado');
+    } catch(e) { rgToast('Error al guardar', false); }
     await loadAll();
     renderTable();
   }
@@ -687,10 +1061,13 @@
   }
 
   async function deleteVarItem(id) {
-    try { await mySupabase.from('monthly_variable_expenses').delete().eq('id', id); } catch(e) {}
-    closeVarPopup();
-    await loadAll();
-    renderTable();
+    try {
+      await mySupabase.from('monthly_variable_expenses').delete().eq('id', id);
+      closeVarPopup();
+      await loadAll();
+      renderTable();
+      rgToast('✓ Gasto eliminado');
+    } catch(e) { rgToast('Error al eliminar gasto', false); }
   }
 
   function closeVarPopup() {
@@ -717,16 +1094,20 @@
   }
 
   function saveIncomeAuto() {
-    const desc = document.getElementById('inc-desc').value.trim();
-    const amt = parseAmount(document.getElementById('inc-monto').value);
-    if (!desc || !amt) return;
+    const desc = document.getElementById('inc-desc')?.value.trim();
+    const amt = parseAmount(document.getElementById('inc-monto')?.value);
+    if (!desc || !amt) { toggleIncomeForm(); return; }
     saveIncome(desc, amt);
   }
 
   function addIncome() { toggleIncomeForm(); }
 
   async function saveIncome(desc, amt) {
-    try { await mySupabase.from('monthly_income').insert({ user_id: currentUser.id, month: selectedMonth, description: desc, amount: amt }); } catch(e) {}
+    invalidateCache([selectedMonth]);
+    try {
+      await mySupabase.from('monthly_income').insert({ user_id: currentUser.id, month: selectedMonth, description: desc, amount: amt });
+      rgToast('✓ Ingreso guardado');
+    } catch(e) { rgToast('Error al guardar ingreso', false); }
     await loadAll();
     renderTable();
   }
@@ -817,5 +1198,22 @@
     window.location.href = 'Final.html';
   }
 </script>
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav"><a href="Final.html" class="bn-item"><span class="bn-icon">🏠</span><span class="bn-label">Inicio</span></a><a href="resumen-global.html" class="bn-item"><span class="bn-icon">📊</span><span class="bn-label">Finanzas</span></a><a href="comidas.html" class="bn-item"><span class="bn-icon">🍽️</span><span class="bn-label">Comidas</span></a><a href="viajes.html" class="bn-item"><span class="bn-icon">✈️</span><span class="bn-label">Viajes</span></a><a href="deudas-tc.html" class="bn-item"><span class="bn-icon">💳</span><span class="bn-label">Deudas</span></a><a href="plantas.html" class="bn-item"><span class="bn-icon">🌿</span><span class="bn-label">Plantas</span></a><a href="wishlist.html" class="bn-item"><span class="bn-icon">🛍️</span><span class="bn-label">Lista</span></a></nav>
+<script>
+(function startClock(){
+  var dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  function tick(){
+    var el=document.getElementById('navbar-datetime');
+    if(!el)return;
+    var now=new Date();
+    var hh=String(now.getHours()).padStart(2,'0');
+    var mm=String(now.getMinutes()).padStart(2,'0');
+    el.innerHTML='<span>'+dias[now.getDay()]+' '+now.getDate()+' '+meses[now.getMonth()]+' '+now.getFullYear()+'</span><span>'+hh+':'+mm+'</span>';
+  }
+  tick();setInterval(tick,1000);
+})();
+</script><script>function toggleTheme(){var n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('org-theme',n);var b=document.getElementById('theme-toggle');if(b)b.textContent=n==='dark'?'☀️':'🌙';}(function(){var t=localStorage.getItem('org-theme');if(t)document.documentElement.setAttribute('data-theme',t);var b=document.getElementById('theme-toggle');if(b)b.textContent=(document.documentElement.getAttribute('data-theme')||'light')==='dark'?'☀️':'🌙';var p=(window.location.pathname.split('/').pop()||'Final.html');document.querySelectorAll('.bn-item').forEach(function(a){if((a.getAttribute('href')||'').split('/').pop()===p)a.classList.add('active');});})();</script>
 </body>
 </html>
