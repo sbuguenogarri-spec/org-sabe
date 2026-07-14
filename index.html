@@ -1,0 +1,1044 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>org.BASE - Dashboard Personal</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%);
+            min-height: 100vh;
+            color: #001a4d;
+        }
+
+        /* BARRA DE NAVEGACIÓN */
+        .navbar {
+            background: linear-gradient(135deg, #001a4d 0%, #003d99 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 38px;
+            font-weight: 700;
+            text-decoration: none;
+            background: transparent;
+            display: flex;
+            align-items: stretch;
+            align-self: stretch;
+            margin: -20px 0 -20px -40px;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .welcome-text {
+            font-size: 18px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .profile-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container {
+            display: flex;
+            min-height: calc(100vh - 100px);
+        }
+
+        /* SECCIÓN DE LOGIN */
+        .login-section {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .login-card {
+            background: white;
+            padding: 50px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 26, 77, 0.15);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-card h1 {
+            font-size: 32px;
+            color: #001a4d;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #001a4d;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #99ccff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 8px rgba(0, 102, 204, 0.2);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.3);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            color: #99ccff;
+            font-size: 14px;
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #001a4d;
+            border: 2px solid #0066cc;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .google-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .links a {
+            color: #0066cc;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        /* SECCIÓN DEL DASHBOARD */
+        .dashboard-section {
+            width: 100%;
+            padding: 40px;
+            display: none;
+        }
+
+        .dashboard-section.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            margin-bottom: 40px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 36px;
+            color: #001a4d;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-header p {
+            color: #0066cc;
+            font-size: 16px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 6px 20px rgba(0, 26, 77, 0.1);
+            border-top: 5px solid;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 26, 77, 0.15);
+        }
+
+        .card-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #001a4d;
+            margin-bottom: 10px;
+        }
+
+        .card-content {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* COLORES PARA CADA TARJETA */
+        .card-resumen {
+            border-top-color: #ff0000;
+        }
+
+        .card-plantas {
+            border-top-color: #00aa00;
+        }
+
+        .card-comidas {
+            border-top-color: #ff7f00;
+        }
+
+        .card-deudas {
+            border-top-color: #7f00ff;
+        }
+
+        .card-wishlist {
+            border-top-color: #00ccff;
+        }
+
+        .card-viajes {
+            border-top-color: #ffdd00;
+        }
+
+        .logout-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 107, 107, 0.3);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 30px;
+            }
+
+            .navbar-right {
+                gap: 15px;
+                width: 100%;
+            }
+
+            .welcome-text {
+                display: none;
+            }
+
+            .nav-menu {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .login-card {
+                padding: 30px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-section {
+                padding: 20px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="navbar" id="navbar" style="display: none;">
+        <div class="logo"><span style="background:white;-webkit-text-fill-color:#001a4d;font-weight:700;padding:0 12px 0 40px;display:flex;align-items:center;margin-right:-8px;">org</span><span style="display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0;align-self:center;flex-shrink:0;position:relative;z-index:1;"></span><span style="-webkit-text-fill-color:white;font-weight:700;align-self:center;padding-left:8px;">BASE</span></div>
+        <div class="navbar-right">
+            <span class="welcome-text" id="welcomeText">¡Bienvenido!</span>
+            <button class="logout-btn" onclick="handleLogout()" style="margin: 0; padding: 10px 20px; font-size: 13px;">Cerrar sesión</button>
+            <div class="profile-icon" id="profileIcon" onclick="openProfileModal()" title="Editar perfil" style="cursor:pointer;">S</div>
+        </div>
+    </nav>
+
+    <!-- MODAL PERFIL -->
+    <div id="profileModal" style="display:none; position:fixed; inset:0; background:rgba(0,26,77,0.45); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:16px; padding:28px 32px; width:380px; max-width:95vw; box-shadow:0 12px 40px rgba(0,26,77,0.2); font-family:'Poppins',sans-serif;">
+            <div style="font-size:18px; font-weight:700; color:#001a4d; margin-bottom:20px;">Mi Perfil</div>
+            <div style="display:flex; gap:12px; margin-bottom:14px;">
+                <div style="flex:1;">
+                    <label style="font-size:12px;font-weight:600;color:#446;display:block;margin-bottom:4px;">Nombre</label>
+                    <input id="profile-nombre" type="text" placeholder="Nombre" style="width:100%;padding:9px 10px;border:1.5px solid #ccd;border-radius:7px;font-family:Poppins;font-size:13px;">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:12px;font-weight:600;color:#446;display:block;margin-bottom:4px;">Apellido</label>
+                    <input id="profile-apellido" type="text" placeholder="Apellido" style="width:100%;padding:9px 10px;border:1.5px solid #ccd;border-radius:7px;font-family:Poppins;font-size:13px;">
+                </div>
+            </div>
+            <div style="margin-bottom:18px;">
+                <label style="font-size:12px;font-weight:600;color:#446;display:block;margin-bottom:4px;">Correo</label>
+                <input id="profile-email" type="email" disabled style="width:100%;padding:9px 10px;border:1.5px solid #eee;border-radius:7px;font-family:Poppins;font-size:13px;background:#f8f8f8;color:#888;">
+            </div>
+            <div id="profile-msg" style="display:none;border-radius:7px;padding:9px 12px;font-size:13px;margin-bottom:14px;text-align:center;"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button onclick="closeProfileModal()" style="padding:9px 18px;background:#e6f0ff;color:#0066cc;border:1px solid #99ccff;border-radius:7px;cursor:pointer;font-weight:600;font-family:Poppins;">Cancelar</button>
+                <button id="profile-save-btn" onclick="saveProfile()" style="padding:9px 18px;background:#003d99;color:white;border:none;border-radius:7px;cursor:pointer;font-weight:600;font-family:Poppins;">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="container">
+        <!-- SECCIÓN DE LOGIN -->
+        <div class="login-section" id="loginSection">
+            <div class="login-card">
+                <h1>Bienvenide a:</h1>
+                <div style="font-size: 36px; font-weight: 700; color: #001a4d; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <span style="font-weight:400;color:#001a4d;">org</span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0 3px 2px;vertical-align:middle;"></span><span style="font-weight:700;color:#001a4d;">BASE</span>
+                </div>
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="email">Correo:</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Contraseña:</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <div id="login-error" style="display:none; background:#ffe6e6; color:#cc0000; border:1px solid #ffb3b3; border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:12px; text-align:center;"></div>
+                    <button type="submit" id="login-btn" class="login-btn">Iniciar Sesión</button>
+                </form>
+
+                <div class="divider">o</div>
+
+                <button class="google-btn" onclick="signInWithGoogle()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                    Iniciar con Google
+                </button>
+
+                <div class="links">
+                    <a href="#" onclick="showPanel('forgot'); return false;">¿Olvidó contraseña?</a><br>
+                    <a href="#" onclick="showPanel('signup'); return false;">Crear Usuario</a>
+                </div>
+
+                <!-- PANEL: OLVIDÉ CONTRASEÑA -->
+                <div id="panel-forgot" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+                    <div style="font-size:15px; font-weight:700; color:#001a4d; margin-bottom:12px;">Recuperar contraseña</div>
+                    <div class="form-group">
+                        <label>Correo registrado:</label>
+                        <input type="email" id="forgot-email" placeholder="tu@correo.com">
+                    </div>
+                    <div id="forgot-msg" style="display:none; border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:12px; text-align:center;"></div>
+                    <button class="login-btn" onclick="handleForgotPassword()">Enviar email de recuperación</button>
+                    <div style="text-align:center; margin-top:10px;">
+                        <a href="#" onclick="showPanel('login'); return false;" style="font-size:13px; color:#666;">← Volver al inicio de sesión</a>
+                    </div>
+                </div>
+
+                <!-- PANEL: CREAR USUARIO -->
+                <div id="panel-signup" style="display:none; margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+                    <div style="font-size:15px; font-weight:700; color:#001a4d; margin-bottom:12px;">Crear cuenta</div>
+                    <div style="display:flex; gap:10px;">
+                        <div class="form-group" style="flex:1;">
+                            <label>Nombre:</label>
+                            <input type="text" id="signup-nombre" placeholder="Sebastián">
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Apellido:</label>
+                            <input type="text" id="signup-apellido" placeholder="Gómez">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo:</label>
+                        <input type="email" id="signup-email" placeholder="tu@correo.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña:</label>
+                        <input type="password" id="signup-password" placeholder="Mínimo 6 caracteres">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar contraseña:</label>
+                        <input type="password" id="signup-password2" placeholder="Repite la contraseña">
+                    </div>
+                    <div id="signup-msg" style="display:none; border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:12px; text-align:center;"></div>
+                    <button class="login-btn" id="signup-btn" onclick="handleSignUp()">Crear cuenta</button>
+                    <div style="text-align:center; margin-top:10px;">
+                        <a href="#" onclick="showPanel('login'); return false;" style="font-size:13px; color:#666;">← Ya tengo cuenta</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN DEL DASHBOARD -->
+        <div class="dashboard-section" id="dashboardSection">
+            <div class="dashboard-header" style="display: none;">
+            </div>
+
+            <div class="cards-grid">
+                <!-- TARJETA 1: RESUMEN GLOBAL -->
+                <div class="card card-resumen" onclick="location.href='resumen-global.html'">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Resumen Global</div>
+                    <div class="card-content" id="resumen-content">
+                        <strong>Flujo de caja mensual</strong><br>
+                        Ingresos vs Egresos<br>
+                        <small style="color: #999;">Dashboard financiero</small>
+                    </div>
+                </div>
+
+                <!-- TARJETA 2: DEUDAS TC -->
+                <div class="card card-deudas" onclick="location.href='deudas-tc.html'">
+                    <div class="card-icon">💳</div>
+                    <div class="card-title">Deudas TC</div>
+                    <div class="card-content" id="deudas-content">
+                        <strong>Cargando...</strong>
+                    </div>
+                </div>
+
+                <!-- TARJETA 3: COMIDAS/SALIDAS -->
+                <div class="card card-comidas">
+                    <div class="card-icon">🍽️</div>
+                    <div class="card-title" onclick="location.href='comidas.html'">Comidas/Salidas</div>
+                    <div class="card-content" id="comidas-content">
+                        <strong>Cargando...</strong>
+                    </div>
+                </div>
+
+                <!-- TARJETA 4: PLANTAS -->
+                <div class="card card-plantas" onclick="location.href='plantas.html'">
+                    <div class="card-icon">🌿</div>
+                    <div class="card-title">Plantas</div>
+                    <div class="card-content" id="plantas-content">
+                        <strong>Cargando...</strong>
+                    </div>
+                </div>
+
+                <!-- TARJETA 5: VIAJES -->
+                <div class="card card-viajes" onclick="location.href='viajes.html'">
+                    <div class="card-icon">✈️</div>
+                    <div class="card-title">Viajes</div>
+                    <div class="card-content" id="viajes-content">
+                        <strong>Cargando...</strong>
+                    </div>
+                </div>
+
+                <!-- TARJETA 6: WISHLIST/LIBROS -->
+                <div class="card card-wishlist" onclick="location.href='wishlist.html'">
+                    <div class="card-icon">🛍📚</div>
+                    <div class="card-title">Wishlist/Libros</div>
+                    <div class="card-content">
+                        <strong>Wishlist:</strong> lo que quieres comprar<br>
+                        <strong>Libros:</strong> tu lista de lectura<br>
+                        <a href="wishlist.html" style="color: #00ccff; text-decoration: none;">Ver lista completa →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN SUPABASE
+        const sbUrl = 'https://vfqjcyecqecfrevmnivy.supabase.co';
+        const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcWpjeWVjcWVjZnJldm1uaXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTc3NTQsImV4cCI6MjA5ODUzMzc1NH0.dNdouTXa3p1ctM6IdJXm0U_bqopEFAh5NoJCeYNDdzk';
+        const mySupabase = supabase.createClient(sbUrl, sbKey);
+
+        function showLogin() {
+            document.getElementById('loginSection').style.display = 'flex';
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('navbar').style.display = 'none';
+        }
+
+        async function showDashboard(email, user) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            document.getElementById('navbar').style.display = 'flex';
+
+            // Obtener nombre real desde metadata
+            let displayName = email.split('@')[0];
+            let inicial = email.charAt(0).toUpperCase();
+            try {
+                const u = user || (await mySupabase.auth.getUser()).data.user;
+                const meta = u?.user_metadata || {};
+                const fullName = meta.full_name || ((meta.nombre || '') + ' ' + (meta.apellido || '')).trim();
+                if (fullName) { displayName = fullName; inicial = fullName.charAt(0).toUpperCase(); }
+            } catch(e) {}
+
+            document.getElementById('profileIcon').textContent = inicial;
+            document.getElementById('welcomeText').textContent = `¡Bienvenido, ${displayName}!`;
+            loadDashboardData();
+        }
+
+        async function openProfileModal() {
+            const { data } = await mySupabase.auth.getUser();
+            const u = data.user;
+            const meta = u?.user_metadata || {};
+            document.getElementById('profile-nombre').value = meta.nombre || '';
+            document.getElementById('profile-apellido').value = meta.apellido || '';
+            document.getElementById('profile-email').value = u?.email || '';
+            document.getElementById('profile-msg').style.display = 'none';
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+        function closeProfileModal() {
+            document.getElementById('profileModal').style.display = 'none';
+        }
+        async function saveProfile() {
+            const nombre = document.getElementById('profile-nombre').value.trim();
+            const apellido = document.getElementById('profile-apellido').value.trim();
+            const msg = document.getElementById('profile-msg');
+            const btn = document.getElementById('profile-save-btn');
+            if (!nombre || !apellido) { showProfileMsg(msg, 'Completa nombre y apellido.', false); return; }
+            btn.textContent = 'Guardando...'; btn.disabled = true;
+            try {
+                const { error } = await mySupabase.auth.updateUser({
+                    data: { nombre, apellido, full_name: nombre + ' ' + apellido }
+                });
+                if (error) { showProfileMsg(msg, error.message, false); }
+                else {
+                    showProfileMsg(msg, '✅ Perfil actualizado.', true);
+                    document.getElementById('welcomeText').textContent = `¡Bienvenido, ${nombre} ${apellido}!`;
+                    document.getElementById('profileIcon').textContent = nombre.charAt(0).toUpperCase();
+                    setTimeout(closeProfileModal, 1200);
+                }
+            } catch(e) { showProfileMsg(msg, 'Error inesperado.', false); }
+            finally { btn.textContent = 'Guardar'; btn.disabled = false; }
+        }
+        function showProfileMsg(el, text, ok) {
+            el.textContent = text;
+            el.style.background = ok ? '#e6fff0' : '#ffe6e6';
+            el.style.color = ok ? '#166534' : '#cc0000';
+            el.style.border = '1px solid ' + (ok ? '#a7f3d0' : '#ffb3b3');
+            el.style.display = 'block';
+        }
+
+        // VERIFICAR SESIÓN AL CARGAR
+        mySupabase.auth.getSession().then(({ data }) => {
+            if (data.session) {
+                showDashboard(data.session.user.email, data.session.user);
+            } else {
+                showLogin();
+            }
+        });
+
+        // NAVEGACIÓN ENTRE PANELES
+        function showPanel(panel) {
+            document.getElementById('loginForm').style.display = panel === 'login' ? 'block' : 'none';
+            document.getElementById('panel-forgot').style.display = panel === 'forgot' ? 'block' : 'none';
+            document.getElementById('panel-signup').style.display = panel === 'signup' ? 'block' : 'none';
+            document.querySelector('.divider').style.display = panel === 'login' ? 'block' : 'none';
+            document.querySelector('.google-btn').style.display = panel === 'login' ? 'flex' : 'none';
+            document.getElementById('login-error').style.display = 'none';
+        }
+
+        // OLVIDÉ CONTRASEÑA
+        async function handleForgotPassword() {
+            const email = document.getElementById('forgot-email').value.trim();
+            const msg = document.getElementById('forgot-msg');
+            if (!email) { showMsg(msg, 'Ingresa tu correo.', false); return; }
+            try {
+                const { error } = await mySupabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.href
+                });
+                if (error) { showMsg(msg, 'Error: ' + error.message, false); }
+                else { showMsg(msg, '✅ Revisa tu correo. Te enviamos un link para restablecer tu contraseña.', true); }
+            } catch(e) { showMsg(msg, 'Error inesperado. Intenta de nuevo.', false); }
+        }
+
+        // CREAR USUARIO
+        async function handleSignUp() {
+            const nombre = document.getElementById('signup-nombre').value.trim();
+            const apellido = document.getElementById('signup-apellido').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const pass = document.getElementById('signup-password').value;
+            const pass2 = document.getElementById('signup-password2').value;
+            const msg = document.getElementById('signup-msg');
+            const btn = document.getElementById('signup-btn');
+
+            if (!nombre || !apellido || !email || !pass) { showMsg(msg, 'Completa todos los campos.', false); return; }
+            if (pass.length < 6) { showMsg(msg, 'La contraseña debe tener al menos 6 caracteres.', false); return; }
+            if (pass !== pass2) { showMsg(msg, 'Las contraseñas no coinciden.', false); return; }
+
+            btn.textContent = 'Creando cuenta...'; btn.disabled = true;
+            try {
+                const { error } = await mySupabase.auth.signUp({
+                    email,
+                    password: pass,
+                    options: { data: { full_name: nombre + ' ' + apellido, nombre, apellido } }
+                });
+                if (error) { showMsg(msg, error.message, false); }
+                else { showMsg(msg, '✅ Cuenta creada. Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.', true); }
+            } catch(e) { showMsg(msg, 'Error inesperado. Intenta de nuevo.', false); }
+            finally { btn.textContent = 'Crear cuenta'; btn.disabled = false; }
+        }
+
+        function showMsg(el, text, ok) {
+            el.textContent = text;
+            el.style.background = ok ? '#e6fff0' : '#ffe6e6';
+            el.style.color = ok ? '#166534' : '#cc0000';
+            el.style.border = '1px solid ' + (ok ? '#a7f3d0' : '#ffb3b3');
+            el.style.display = 'block';
+        }
+
+        // MANEJAR LOGIN CON EMAIL/CONTRASEÑA
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+            const btn = document.getElementById('login-btn');
+
+            errorDiv.style.display = 'none';
+            btn.textContent = 'Iniciando...';
+            btn.disabled = true;
+
+            try {
+                const { data, error } = await mySupabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) {
+                    let msg = 'Correo o contraseña incorrectos.';
+                    if (error.message.includes('Email not confirmed')) msg = 'Debes confirmar tu correo antes de iniciar sesión.';
+                    else if (error.message.includes('Invalid login')) msg = 'Correo o contraseña incorrectos.';
+                    else if (error.message.includes('Too many requests')) msg = 'Demasiados intentos. Espera unos minutos.';
+                    errorDiv.textContent = msg;
+                    errorDiv.style.display = 'block';
+                } else {
+                    showDashboard(data.user.email);
+                    document.getElementById('loginForm').reset();
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Error inesperado. Intenta de nuevo.';
+                errorDiv.style.display = 'block';
+            } finally {
+                btn.textContent = 'Iniciar Sesión';
+                btn.disabled = false;
+            }
+        }
+
+        // MANEJAR LOGIN CON GOOGLE
+        async function signInWithGoogle() {
+            try {
+                const { data, error } = await mySupabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + '/Final.html'
+                    }
+                });
+
+                if (error) {
+                    console.error("Error de Google:", error);
+                }
+            } catch (error) {
+                console.error("Error inesperado:", error.message);
+            }
+        }
+
+        // MANEJAR LOGOUT
+        async function handleLogout() {
+            try {
+                const { error } = await mySupabase.auth.signOut();
+                if (error) {
+                    console.error("Error al cerrar sesión:", error.message);
+                } else {
+                    showLogin();
+                    document.getElementById('loginForm').reset();
+                }
+            } catch (error) {
+                console.error("Error inesperado:", error.message);
+            }
+        }
+
+        // ACTUALIZAR CONTENIDO (para navegación)
+        function updateContent(section) {
+            console.log("Navegando a:", section);
+            // Aquí se pueden agregar cambios dinámicos según la sección
+        }
+
+        let comidasMiGasto = 0;
+        let comidasTotal = 0;
+        let viajesMiGasto = 0;
+        let viajesTotal = 0;
+
+        function formatNumber(n) {
+            if (typeof n === 'string') {
+                n = parseFloat(n.replace(/[^0-9,-]+/g,"").replace(",", ".")) || 0;
+            }
+            if (typeof n !== 'number') n = parseFloat(n) || 0;
+            return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function calculateTotals() {
+            try {
+                const comidasChecked = document.getElementById('comidas-checkbox').checked;
+                const viajesChecked = document.getElementById('viajes-checkbox').checked;
+
+                localStorage.setItem('comidasChecked', comidasChecked);
+                localStorage.setItem('viajesChecked', viajesChecked);
+                localStorage.setItem('comidasMiGasto', comidasMiGasto);
+                localStorage.setItem('comidasTotal', comidasTotal);
+                localStorage.setItem('viajesMiGasto', viajesMiGasto);
+                localStorage.setItem('viajesTotal', viajesTotal);
+
+                let total = 0;
+                if (comidasChecked) {
+                    total += comidasMiGasto;
+                }
+                if (viajesChecked) {
+                    total += viajesMiGasto;
+                }
+                // Aquí puedes actualizar un elemento en el DOM que muestre el total
+                console.log("Total seleccionado:", total);
+            } catch (e) {
+                console.error("Error saving to localStorage:", e);
+            }
+        }
+
+        // CARGAR DATOS AL MOSTRAR DASHBOARD
+        async function loadDashboardData() {
+            await Promise.all([
+                loadComidas(),
+                loadDeudas(),
+                loadViajes(),
+                loadPlantasDashboard()
+            ]);
+            calculateTotals();
+        }
+
+        // ESCUCHAR CAMBIOS DE AUTENTICACIÓN
+        mySupabase.auth.onAuthStateChange((event, session) => {
+            console.log("Estado de autenticación:", event);
+            if (event === 'SIGNED_IN' && session) {
+                showDashboard(session.user.email);
+            } else if (event === 'SIGNED_OUT') {
+                showLogin();
+            }
+        });
+
+        // FUNCIONES PARA CARGAR DATOS DE TARJETAS
+        async function loadViajes() {
+            try {
+                const { data: { user } } = await mySupabase.auth.getUser();
+                if (!user) return;
+
+                const { data: trips, error: tripsError } = await mySupabase
+                    .from('trips')
+                    .select('id, name, my_participant_name, expenses, trip_participants(name)')
+                    .eq('user_id', user.id);
+
+                if (tripsError) {
+                    console.error('Error fetching trips:', tripsError);
+                    return;
+                }
+
+                if (!trips || trips.length === 0) {
+                    document.getElementById('viajes-content').innerHTML = '<strong>Lo que debo:</strong> $0<br><strong>Total viajes:</strong> $0<br><small style="color: #999;">0 viajes</small>';
+                    return;
+                }
+
+                let totalMiBalance = 0;
+                let totalGastadoViajes = 0;
+
+                for (const trip of trips) {
+                    const expenses = trip.expenses || [];
+                    const myName = trip.my_participant_name;
+                    if (!expenses.length || !myName) continue;
+
+                    // Inicializar balances con los participantes del viaje
+                    const personBalances = {};
+                    (trip.trip_participants || []).forEach(p => {
+                        personBalances[p.name] = { paid: 0, owes: 0 };
+                    });
+
+                    expenses.forEach(expense => {
+                        const installments = expense.installments || 1;
+                        const perPersonPerInstallment = (expense.total / installments) / (expense.participants || []).length;
+
+                        totalGastadoViajes += expense.total;
+
+                        const paidByName = expense.paidByName || '';
+                        if (personBalances[paidByName] !== undefined) {
+                            personBalances[paidByName].paid += expense.total;
+                        }
+
+                        for (let i = 0; i < installments; i++) {
+                            (expense.participants || []).forEach(participantName => {
+                                const payment = expense.installmentPayments &&
+                                    expense.installmentPayments[i] &&
+                                    expense.installmentPayments[i].find(pm => pm.participantId === participantName);
+
+                                let cuotaAmount = perPersonPerInstallment;
+                                if (expense.customCuotaAmounts &&
+                                    expense.customCuotaAmounts[participantName] &&
+                                    expense.customCuotaAmounts[participantName][i] !== undefined) {
+                                    cuotaAmount = expense.customCuotaAmounts[participantName][i];
+                                }
+
+                                if (!payment || !payment.paid) {
+                                    if (personBalances[participantName] !== undefined) {
+                                        personBalances[participantName].owes += cuotaAmount;
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    if (personBalances[myName] !== undefined) {
+                        // balance negativo = debo dinero; positivo = me deben
+                        totalMiBalance += personBalances[myName].paid - personBalances[myName].owes;
+                    }
+                }
+
+                // totalMiBalance negativo significa deuda neta
+                viajesMiGasto = Math.abs(Math.min(0, totalMiBalance));
+                viajesTotal = totalGastadoViajes;
+
+                const balanceLabel = totalMiBalance < -0.01 ? 'Lo que debo:' :
+                                     totalMiBalance > 0.01  ? 'Me deben:'    : 'Saldo:';
+
+                document.getElementById('viajes-content').innerHTML = `
+                    <strong>${balanceLabel}</strong> $${formatNumber(Math.abs(totalMiBalance))}<br>
+                    <strong>Total viajes:</strong> $${formatNumber(totalGastadoViajes)}<br>
+                    <small style="color: #999;">${trips.length} ${trips.length === 1 ? 'viaje' : 'viajes'}</small>
+                `;
+            } catch (e) {
+                console.error('Error cargando viajes:', e);
+                document.getElementById('viajes-content').innerHTML = '<strong>Error al cargar viajes</strong>';
+            }
+        }
+
+        async function loadPlantasDashboard() {
+            try {
+                const { data: { user } } = await mySupabase.auth.getUser();
+                if (!user) return;
+
+                const { data: plantas } = await mySupabase
+                    .from('plantas')
+                    .select('frecuencia_riego, ultima_fecha_riego')
+                    .eq('user_id', user.id);
+
+                if (!plantas || plantas.length === 0) {
+                    document.getElementById('plantas-content').innerHTML =
+                        '<strong>Total:</strong> 0 plantas<br><small style="color:#999;">Agrega tu primera planta</small>';
+                    return;
+                }
+
+                const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+                const nRiego = plantas.filter(p => {
+                    const ultima = new Date(p.ultima_fecha_riego + 'T00:00:00');
+                    const dias = Math.floor((hoy - ultima) / 86400000);
+                    return dias >= p.frecuencia_riego;
+                }).length;
+
+                let html = `<strong>Total:</strong> ${plantas.length} planta${plantas.length !== 1 ? 's' : ''}<br>`;
+                if (nRiego > 0) {
+                    html += `<strong style="color:#dc3545;">🚿 ${nRiego} necesitan riego hoy</strong>`;
+                } else {
+                    html += `<small style="color:#28a745;">✅ Todas regadas</small>`;
+                }
+                document.getElementById('plantas-content').innerHTML = html;
+            } catch (e) {
+                console.error('Error cargando plantas en dashboard:', e);
+            }
+        }
+
+        async function loadComidas() {
+            try {
+                const user = await mySupabase.auth.getUser();
+                if (!user.data.user) return;
+
+                const { data: meals } = await mySupabase
+                    .from('meals')
+                    .select('*')
+                    .eq('user_id', user.data.user.id)
+                    .order('created_at', { ascending: false });
+
+                if (!meals || meals.length === 0) {
+                    document.getElementById('comidas-content').innerHTML = '<strong>Gasto Total:</strong> $0<br><small style="color: #999;">0 transacciones</small>';
+                    return;
+                }
+
+                let totalGastado = 0;
+                let miGasto = 0;  // Lo que gasté "yo"
+
+                meals.forEach(meal => {
+                    try {
+                        const data = JSON.parse(meal.data);
+                        const mealTotal = Object.values(data.personTotals || {}).reduce((a, b) => a + b, 0);
+                        totalGastado += mealTotal;
+
+                        // Sumar lo que yo gasté
+                        if (data.me && data.personTotals[data.me]) {
+                            miGasto += data.personTotals[data.me];
+                        }
+                    } catch (e) {
+                        console.error('Error parseando meal:', e);
+                    }
+                });
+
+                comidasMiGasto = miGasto;
+                comidasTotal = totalGastado;
+
+                document.getElementById('comidas-content').innerHTML = `
+                    <strong>Lo que gasté:</strong> $${formatNumber(miGasto)}<br>
+                    <strong>Total comidas:</strong> $${formatNumber(totalGastado)}<br>
+                    <small style="color: #999;">${meals.length} transacciones</small>
+                `;
+            } catch (e) {
+                console.error('Error cargando comidas:', e);
+            }
+        }
+
+        async function loadDeudas() {
+            try {
+                const user = await mySupabase.auth.getUser();
+                if (!user.data.user) return;
+
+                const { data: debts } = await mySupabase
+                    .from('debts')
+                    .select('*')
+                    .eq('user_id', user.data.user.id);
+
+                const { data: installments } = await mySupabase
+                    .from('installments')
+                    .select('*')
+                    .eq('paid', false);
+
+                if (!debts || debts.length === 0) {
+                    document.getElementById('deudas-content').innerHTML = '<strong>Estado:</strong> Sin deudas activas<br><small style="color: #999;">¡Felicidades!</small>';
+                    return;
+                }
+
+                const totalDeudas = debts.reduce((sum, d) => sum + parseFloat(d.total_amount), 0);
+                const cuotasPendientes = installments ? installments.filter(i => 
+                    debts.some(d => d.id === i.debt_id)
+                ).length : 0;
+
+                document.getElementById('deudas-content').innerHTML = `
+                    <strong>Deudas Activas:</strong> ${debts.length}<br>
+                    <strong>Total Adeudado:</strong> $${formatNumber(totalDeudas)}<br>
+                    <small style="color: #999;">${cuotasPendientes} cuotas pendientes</small>
+                `;
+            } catch (e) {
+                console.error('Error cargando deudas:', e);
+            }
+        }
+    </script>
+</body>
+</html>
+</html>
