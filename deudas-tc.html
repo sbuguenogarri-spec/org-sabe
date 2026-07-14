@@ -1282,7 +1282,7 @@
                     let total = 0;
 
                     debts.forEach(debt => {
-                        if (debt.category_id === category.id && !debt.is_income) {
+                        if (debt.category_id === category.id && dept.total_amount >= 0) {
                             const installments = debt.installments || [];
                             const debtStartDate = new Date(debt.start_date);
                             
@@ -1323,7 +1323,7 @@
                 const cell = document.createElement('td');
                 let total = 0;
                 debts.forEach(debt => {
-                    if (debt.is_income) return;
+                    if (debt.total_amount < 0) return;
                     const debtStartDate = new Date(debt.start_date);
                     const monthsDiff = (tempDateTotal.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                        (tempDateTotal.getMonth() - debtStartDate.getMonth());
@@ -1369,7 +1369,7 @@
             categories.forEach(category => {
                 try {
                     const categoryDebts = debts.filter(d => d.category_id === category.id);
-                    const regularDebts = categoryDebts.filter(d => !d.is_income);
+                    const regularDebts = categoryDebts.filter(d => d.total_amount >= 0);
                     const totalDebt = regularDebts.reduce((sum, d) => sum + d.total_amount, 0);
                     
                     // Deuda mes actual (según currentMonth seleccionado)
@@ -1591,8 +1591,8 @@
             body.innerHTML = '';
 
             // Separar deudas normales e ingresos por cobrar
-            const _regularDebts = categoryDebts.filter(d => !d.is_income);
-            const _incomeDebts  = categoryDebts.filter(d => d.is_income);
+            const _regularDebts = categoryDebts.filter(d => d.total_amount >= 0);
+            const _incomeDebts  = categoryDebts.filter(d => d.total_amount < 0);
 
             _regularDebts.forEach(debt => {
                 const debtStartDate = new Date(debt.start_date);
