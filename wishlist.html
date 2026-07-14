@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wishlist / Libros - org.BASE</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ====================================================
+       BASE
+    ==================================================== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%);
+      min-height: 100vh;
+      color: #001a4d;
+    }
+
+    /* ====================================================
+       NAVBAR  (idéntico al resto del dashboard)
+    ==================================================== */
+    .navbar {
+      background: linear-gradient(135deg, #001a4d 0%, #003d99 100%);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2);
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .logo {
+      font-size: 38px;
+      font-weight: 700;
+      text-decoration: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: stretch;
+      align-self: stretch;
+      margin: -20px 0 -20px -40px;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .welcome-text {
+      font-size: 16px;
+      color: white;
+      font-weight: 500;
+    }
+
+    .logout-btn {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+    }
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(255, 107, 107, 0.3);
+    }
+
+    .profile-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ====================================================
+       CONTENIDO PRINCIPAL
+    ==================================================== */
+    .main-content {
+      padding: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ====================================================
+       ENCABEZADO DE PÁGINA
+    ==================================================== */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .page-header-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      border: 2px solid #0066cc;
+      color: #0066cc;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .back-btn:hover { background: #0066cc; color: white; }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #001a4d;
+    }
+
+    .page-subtitle {
+      font-size: 13px;
+      color: #0066cc;
+      margin-top: 3px;
+    }
+
+    /* ====================================================
+       CHIPS DE ESTADÍSTICAS
+    ==================================================== */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      background: white;
+      border-radius: 20px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #001a4d;
+      box-shadow: 0 2px 10px rgba(0, 26, 77, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-chip.wishlist { border-left: 4px solid #00ccff; }
+    .stat-chip.books    { border-left: 4px solid #a855f7; }
+    .stat-chip.done     { border-left: 4px solid #22c55e; }
+
+    /* ====================================================
+       LAYOUT DOS COLUMNAS
+    ==================================================== */
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 900px) {
+      .two-columns { grid-template-columns: 1fr; }
+    }
+
+    /* ====================================================
+       PANELES (Wishlist y Libros)
+    ==================================================== */
+    .panel {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 26, 77, 0.1);
+      border-top: 5px solid;
+      overflow: hidden;
+    }
+
+    .panel-wishlist { border-top-color: #00ccff; }
+    .panel-books    { border-top-color: #a855f7; }
+
+    .panel-header {
+      padding: 22px 24px 16px;
+      border-bottom: 1px solid #f0f4ff;
+    }
+
+    .panel-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #001a4d;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ====================================================
+       FORMULARIO DE AGREGAR
+    ==================================================== */
+    .add-form {
+      padding: 18px 24px;
+      border-bottom: 1px solid #f0f4ff;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .add-form input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #d0e0ff;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+      color: #001a4d;
+      transition: border-color 0.3s ease;
+      outline: none;
+    }
+    .add-form input:focus { border-color: #0066cc; }
+    .add-form input::placeholder { color: #aab; }
+
+    .add-form-row {
+      display: flex;
+      gap: 8px;
+    }
+    .add-form-row input { flex: 1; }
+
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+      color: white;
+      white-space: nowrap;
+    }
+
+    .btn-add-wishlist {
+      background: linear-gradient(135deg, #00ccff 0%, #0099cc 100%);
+      box-shadow: 0 4px 12px rgba(0, 204, 255, 0.3);
+    }
+    .btn-add-wishlist:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 204, 255, 0.4);
+    }
+
+    .btn-add-books {
+      background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+    }
+    .btn-add-books:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(168, 85, 247, 0.4);
+    }
+
+    /* ====================================================
+       LISTA DE ÍTEMS
+    ==================================================== */
+    .items-container {
+      padding: 16px 24px 20px;
+      max-height: 580px;
+      overflow-y: auto;
+    }
+
+    /* Scrollbar personalizado */
+    .items-container::-webkit-scrollbar { width: 6px; }
+    .items-container::-webkit-scrollbar-track { background: #f0f4ff; border-radius: 3px; }
+    .items-container::-webkit-scrollbar-thumb { background: #99ccff; border-radius: 3px; }
+
+    /* Sección pendientes / completados */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #889;
+      margin: 14px 0 8px;
+    }
+    .section-label:first-child { margin-top: 0; }
+
+    /* Ítem individual */
+    .item-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      background: #f8fbff;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #e6eeff;
+      transition: all 0.25s ease;
+      animation: itemIn 0.3s ease both;
+    }
+
+    @keyframes itemIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .item-row:hover {
+      border-color: #99ccff;
+      box-shadow: 0 3px 10px rgba(0, 26, 77, 0.07);
+    }
+
+    .item-row.completed {
+      background: #f0fff6;
+      border-color: #bbf7d0;
+      opacity: 0.8;
+    }
+
+    /* Checkbox personalizado */
+    .item-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #99ccff;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      transition: all 0.2s ease;
+      background: white;
+    }
+    .item-check:hover { border-color: #0066cc; transform: scale(1.1); }
+    .item-check.done  { background: #22c55e; border-color: #22c55e; }
+    .item-check.done::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+
+    .item-body { flex: 1; min-width: 0; }
+
+    .item-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #001a4d;
+      word-break: break-word;
+    }
+    .item-row.completed .item-title {
+      text-decoration: line-through;
+      color: #889;
+    }
+
+    .item-meta {
+      font-size: 12px;
+      color: #667;
+      margin-top: 3px;
+      word-break: break-word;
+    }
+
+    .item-link {
+      font-size: 12px;
+      color: #0066cc;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 3px;
+    }
+    .item-link:hover { text-decoration: underline; }
+
+    .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    .btn-icon {
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      background: transparent;
+    }
+    .btn-del { color: #ff4444; }
+    .btn-del:hover { background: #ffe6e6; transform: scale(1.1); }
+
+    /* ====================================================
+       MENSAJE VACÍO
+    ==================================================== */
+    .empty-msg {
+      text-align: center;
+      padding: 30px 20px;
+      color: #aab;
+      font-size: 13px;
+    }
+    .empty-msg span {
+      display: block;
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    /* ====================================================
+       SPINNER DE CARGA
+    ==================================================== */
+    .loader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      gap: 10px;
+      color: #0066cc;
+      font-size: 13px;
+    }
+    .spinner {
+      width: 22px;
+      height: 22px;
+      border: 3px solid #d0e0ff;
+      border-top-color: #0066cc;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ====================================================
+       TOAST NOTIFICACIÓN
+    ==================================================== */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #001a4d;
+      color: white;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0, 26, 77, 0.25);
+      z-index: 9999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #166534; }
+    .toast.error   { background: #cc0000; }
+
+    /* ====================================================
+       RESPONSIVE
+    ==================================================== */
+    @media (max-width: 768px) {
+      .navbar { padding: 15px 20px; }
+      .logo   { font-size: 22px; }
+      .welcome-text { display: none; }
+      .main-content { padding: 20px; }
+      .page-title   { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================
+       NAVBAR
+  ======================================================== -->
+  <nav class="navbar">
+    <div class="logo" onclick="location.href='Final.html'"><span style="background:white;-webkit-text-fill-color:#001a4d;font-weight:700;padding:0 12px 0 40px;display:flex;align-items:center;margin-right:-8px;">org</span><span style="display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0;align-self:center;flex-shrink:0;position:relative;z-index:1;"></span><span style="-webkit-text-fill-color:white;font-weight:700;align-self:center;padding-left:8px;">BASE</span></div>
+    <div class="navbar-right">
+      <span class="welcome-text" id="welcomeText">Cargando...</span>
+      <button class="logout-btn" onclick="handleLogout()">Cerrar sesión</button>
+      <div class="profile-icon" id="profileIcon">S</div>
+    </div>
+  </nav>
+
+  <!-- ========================================================
+       CONTENIDO PRINCIPAL
+  ======================================================== -->
+  <div class="main-content">
+
+    <!-- Encabezado -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <a class="back-btn" href="Final.html">← Volver</a>
+        <div>
+          <div class="page-title">🛍 Wishlist &amp; 📚 Libros</div>
+          <div class="page-subtitle">Todo lo que quieres comprar y leer</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chips de estadísticas -->
+    <div class="stats-bar">
+      <div class="stat-chip wishlist">🛍 Wishlist pendiente: <strong id="stat-w-pending">0</strong></div>
+      <div class="stat-chip wishlist">✅ Wishlist comprada: <strong id="stat-w-done">0</strong></div>
+      <div class="stat-chip books">📚 Libros por leer: <strong id="stat-b-pending">0</strong></div>
+      <div class="stat-chip books">✅ Libros leídos: <strong id="stat-b-done">0</strong></div>
+    </div>
+
+    <!-- Layout dos columnas -->
+    <div class="two-columns">
+
+      <!-- ===================== COLUMNA WISHLIST ===================== -->
+      <div class="panel panel-wishlist">
+        <div class="panel-header">
+          <div class="panel-title">🛍 Wishlist</div>
+        </div>
+
+        <!-- Formulario agregar ítem -->
+        <div class="add-form">
+          <input type="text" id="w-nombre" placeholder="Nombre del ítem (requerido)" maxlength="120">
+          <input type="text" id="w-desc"   placeholder="Descripción (opcional)"      maxlength="200">
+          <div class="add-form-row">
+            <input type="url" id="w-link" placeholder="Link (opcional)">
+            <button class="btn-add btn-add-wishlist" onclick="agregarItem('wishlist')">+ Agregar</button>
+          </div>
+        </div>
+
+        <!-- Lista -->
+        <div class="items-container" id="wishlist-container">
+          <div class="loader"><div class="spinner"></div> Cargando...</div>
+        </div>
+      </div>
+
+      <!-- ===================== COLUMNA LIBROS ===================== -->
+      <div class="panel panel-books">
+        <div class="panel-header">
+          <div class="panel-title">📚 Libros</div>
+        </div>
+
+        <!-- Formulario agregar libro -->
+        <div class="add-form">
+          <input type="text" id="b-titulo"  placeholder="Título del libro (requerido)" maxlength="120">
+          <div class="add-form-row">
+            <input type="text" id="b-autor" placeholder="Autor (opcional)" maxlength="100">
+            <button class="btn-add btn-add-books" onclick="agregarItem('book')">+ Agregar</button>
+          </div>
+        </div>
+
+        <!-- Lista -->
+        <div class="items-container" id="books-container">
+          <div class="loader"><div class="spinner"></div> Cargando...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast global -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ========================================================
+       JAVASCRIPT
+  ======================================================== -->
+  <script>
+    // ============================================================
+    // CONFIGURACIÓN SUPABASE
+    // ============================================================
+    const sbUrl = 'https://vfqjcyecqecfrevmnivy.supabase.co';
+    const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcWpjeWVjcWVjZnJldm1uaXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTc3NTQsImV4cCI6MjA5ODUzMzc1NH0.dNdouTXa3p1ctM6IdJXm0U_bqopEFAh5NoJCeYNDdzk';
+    const mySupabase = supabase.createClient(sbUrl, sbKey);
+
+    let usuarioActual = null;
+
+    // ============================================================
+    // AUTENTICACIÓN
+    // ============================================================
+    mySupabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        usuarioActual = data.session.user;
+        iniciarUI(usuarioActual);
+        cargarItems();
+      } else {
+        window.location.href = 'Final.html';
+      }
+    });
+
+    mySupabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') window.location.href = 'Final.html';
+    });
+
+    function iniciarUI(user) {
+      const meta      = user.user_metadata || {};
+      const fullName  = meta.full_name || ((meta.nombre || '') + ' ' + (meta.apellido || '')).trim();
+      const nombre    = fullName || user.email.split('@')[0];
+      const inicial   = nombre.charAt(0).toUpperCase();
+      document.getElementById('welcomeText').textContent = `¡Bienvenido, ${nombre}!`;
+      document.getElementById('profileIcon').textContent = inicial;
+    }
+
+    async function handleLogout() {
+      await mySupabase.auth.signOut();
+      window.location.href = 'Final.html';
+    }
+
+    // ============================================================
+    // CARGAR ÍTEMS
+    // ============================================================
+    async function cargarItems() {
+      if (!usuarioActual) return;
+
+      // Mostrar spinners
+      document.getElementById('wishlist-container').innerHTML = '<div class="loader"><div class="spinner"></div> Cargando...</div>';
+      document.getElementById('books-container').innerHTML    = '<div class="loader"><div class="spinner"></div> Cargando...</div>';
+
+      const { data, error } = await mySupabase
+        .from('wishlist_items')
+        .select('*')
+        .eq('user_id', usuarioActual.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        mostrarToast('Error al cargar los datos: ' + error.message, 'error');
+        document.getElementById('wishlist-container').innerHTML = '<div class="empty-msg"><span>⚠️</span>Error al cargar. Intenta de nuevo.</div>';
+        document.getElementById('books-container').innerHTML    = '<div class="empty-msg"><span>⚠️</span>Error al cargar. Intenta de nuevo.</div>';
+        return;
+      }
+
+      const wishlistItems = (data || []).filter(i => i.type === 'wishlist');
+      const bookItems     = (data || []).filter(i => i.type === 'book');
+
+      renderizarLista('wishlist-container', wishlistItems, 'wishlist');
+      renderizarLista('books-container',    bookItems,     'book');
+      actualizarEstadisticas(wishlistItems, bookItems);
+    }
+
+    // ============================================================
+    // RENDERIZAR LISTA
+    // ============================================================
+    function renderizarLista(containerId, items, tipo) {
+      const container = document.getElementById(containerId);
+
+      if (!items || items.length === 0) {
+        const esWishlist = tipo === 'wishlist';
+        container.innerHTML = `
+          <div class="empty-msg">
+            <span>${esWishlist ? '🛍' : '📚'}</span>
+            ${esWishlist ? 'No tienes ítems en tu wishlist aún' : 'No tienes libros en tu lista aún'}
+          </div>`;
+        return;
+      }
+
+      const pendientes  = items.filter(i => !i.is_completed);
+      const completados = items.filter(i => i.is_completed);
+      let html = '';
+
+      if (pendientes.length > 0) {
+        html += `<div class="section-label">⏳ Pendientes (${pendientes.length})</div>`;
+        pendientes.forEach(item => { html += crearItemHTML(item, tipo); });
+      }
+
+      if (completados.length > 0) {
+        html += `<div class="section-label">${tipo === 'wishlist' ? '✅ Comprados' : '✅ Leídos'} (${completados.length})</div>`;
+        completados.forEach(item => { html += crearItemHTML(item, tipo); });
+      }
+
+      container.innerHTML = html;
+    }
+
+    function crearItemHTML(item, tipo) {
+      const completedClass = item.is_completed ? 'completed' : '';
+      const checkClass     = item.is_completed ? 'done' : '';
+      const title          = escaparHTML(item.title);
+
+      let metaHTML = '';
+      if (tipo === 'wishlist') {
+        if (item.description) metaHTML += `<div class="item-meta">${escaparHTML(item.description)}</div>`;
+        if (item.link)        metaHTML += `<a class="item-link" href="${escaparHTML(item.link)}" target="_blank" rel="noopener noreferrer">🔗 Ver enlace</a>`;
+      } else {
+        if (item.author)      metaHTML += `<div class="item-meta">✍️ ${escaparHTML(item.author)}</div>`;
+      }
+
+      return `
+        <div class="item-row ${completedClass}" id="item-${item.id}">
+          <div class="item-check ${checkClass}" onclick="marcarComoCompletado('${item.id}', ${item.is_completed})" title="${item.is_completed ? 'Desmarcar' : (tipo === 'wishlist' ? 'Marcar como comprado' : 'Marcar como leído')}"></div>
+          <div class="item-body">
+            <div class="item-title">${title}</div>
+            ${metaHTML}
+          </div>
+          <div class="item-actions">
+            <button class="btn-icon btn-del" onclick="eliminarItem('${item.id}')" title="Eliminar">🗑️</button>
+          </div>
+        </div>`;
+    }
+
+    // ============================================================
+    // AGREGAR ÍTEM
+    // ============================================================
+    async function agregarItem(tipo) {
+      if (!usuarioActual) return;
+
+      let title, description, link, author;
+
+      if (tipo === 'wishlist') {
+        title       = document.getElementById('w-nombre').value.trim();
+        description = document.getElementById('w-desc').value.trim();
+        link        = document.getElementById('w-link').value.trim();
+      } else {
+        title  = document.getElementById('b-titulo').value.trim();
+        author = document.getElementById('b-autor').value.trim();
+      }
+
+      if (!title) {
+        mostrarToast(tipo === 'wishlist' ? 'El nombre del ítem es requerido.' : 'El título del libro es requerido.', 'error');
+        return;
+      }
+
+      // Validar URL si se proporcionó un link
+      if (link && !esURLValida(link)) {
+        mostrarToast('El link no es una URL válida.', 'error');
+        return;
+      }
+
+      const payload = {
+        user_id      : usuarioActual.id,
+        type         : tipo,
+        title,
+        description  : description || null,
+        link         : link        || null,
+        author       : author      || null,
+        is_completed : false
+      };
+
+      const { error } = await mySupabase.from('wishlist_items').insert([payload]);
+
+      if (error) {
+        mostrarToast('Error al agregar: ' + error.message, 'error');
+        return;
+      }
+
+      // Limpiar formulario
+      if (tipo === 'wishlist') {
+        document.getElementById('w-nombre').value = '';
+        document.getElementById('w-desc').value   = '';
+        document.getElementById('w-link').value   = '';
+      } else {
+        document.getElementById('b-titulo').value = '';
+        document.getElementById('b-autor').value  = '';
+      }
+
+      mostrarToast(tipo === 'wishlist' ? '✅ Ítem agregado a la wishlist' : '✅ Libro agregado a la lista', 'success');
+      cargarItems();
+    }
+
+    // ============================================================
+    // MARCAR COMO COMPLETADO / DESMARCAR
+    // ============================================================
+    async function marcarComoCompletado(id, estadoActual) {
+      if (!usuarioActual) return;
+
+      const nuevoEstado = !estadoActual;
+
+      const { error } = await mySupabase
+        .from('wishlist_items')
+        .update({ is_completed: nuevoEstado })
+        .eq('id', id)
+        .eq('user_id', usuarioActual.id);
+
+      if (error) {
+        mostrarToast('Error al actualizar: ' + error.message, 'error');
+        return;
+      }
+
+      mostrarToast(nuevoEstado ? '✅ Marcado como completado' : '↩️ Marcado como pendiente', 'success');
+      cargarItems();
+    }
+
+    // ============================================================
+    // ELIMINAR ÍTEM
+    // ============================================================
+    async function eliminarItem(id) {
+      if (!usuarioActual) return;
+      if (!confirm('¿Seguro que quieres eliminar este ítem?')) return;
+
+      const { error } = await mySupabase
+        .from('wishlist_items')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', usuarioActual.id);
+
+      if (error) {
+        mostrarToast('Error al eliminar: ' + error.message, 'error');
+        return;
+      }
+
+      mostrarToast('🗑️ Ítem eliminado', 'success');
+      cargarItems();
+    }
+
+    // ============================================================
+    // ACTUALIZAR ESTADÍSTICAS
+    // ============================================================
+    function actualizarEstadisticas(wishlistItems, bookItems) {
+      document.getElementById('stat-w-pending').textContent = wishlistItems.filter(i => !i.is_completed).length;
+      document.getElementById('stat-w-done').textContent    = wishlistItems.filter(i =>  i.is_completed).length;
+      document.getElementById('stat-b-pending').textContent = bookItems.filter(i => !i.is_completed).length;
+      document.getElementById('stat-b-done').textContent    = bookItems.filter(i =>  i.is_completed).length;
+    }
+
+    // ============================================================
+    // UTILIDADES
+    // ============================================================
+
+    // Escapa caracteres HTML para prevenir XSS
+    function escaparHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Valida que un string sea una URL con protocolo http/https
+    function esURLValida(url) {
+      try {
+        const parsed = new URL(url);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    }
+
+    // Toast de notificación
+    let toastTimer;
+    function mostrarToast(mensaje, tipo = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = mensaje;
+      toast.className   = `toast ${tipo}`;
+      // Forzar reflow para reiniciar animación
+      void toast.offsetWidth;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 2800);
+    }
+
+    // Enter en inputs del formulario de wishlist
+    ['w-nombre', 'w-desc', 'w-link'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); agregarItem('wishlist'); }
+      });
+    });
+
+    // Enter en inputs del formulario de libros
+    ['b-titulo', 'b-autor'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); agregarItem('book'); }
+      });
+    });
+  </script>
+</body>
+</html>

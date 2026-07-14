@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plantas - org.BASE</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ====================================================
+           BASE
+        ==================================================== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%);
+            min-height: 100vh;
+            color: #001a4d;
+        }
+
+        /* ====================================================
+           NAVBAR  (idéntico a Final.html)
+        ==================================================== */
+        .navbar {
+            background: linear-gradient(135deg, #001a4d 0%, #003d99 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 38px;
+            font-weight: 700;
+            text-decoration: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: stretch;
+            align-self: stretch;
+            margin: -20px 0 -20px -40px;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .welcome-text {
+            font-size: 16px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 107, 107, 0.3);
+        }
+
+        .profile-icon {
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        /* ====================================================
+           CONTENIDO PRINCIPAL
+        ==================================================== */
+        .main-content {
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ====================================================
+           ENCABEZADO DE PÁGINA
+        ==================================================== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .page-header-left {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            border: 2px solid #0066cc;
+            color: #0066cc;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .back-btn:hover { background: #0066cc; color: white; }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #001a4d;
+        }
+
+        .page-subtitle {
+            font-size: 13px;
+            color: #0066cc;
+            margin-top: 3px;
+        }
+
+        .add-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 26px;
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(0, 102, 204, 0.3);
+            white-space: nowrap;
+        }
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(0, 102, 204, 0.4);
+        }
+
+        /* ====================================================
+           CHIPS DE ESTADÍSTICAS
+        ==================================================== */
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-chip {
+            background: white;
+            border-radius: 20px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #001a4d;
+            box-shadow: 0 2px 10px rgba(0, 26, 77, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-chip.alerta {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* ====================================================
+           GRID DE TARJETAS
+        ==================================================== */
+        .plants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* ====================================================
+           TARJETA POST-IT
+        ==================================================== */
+        .plant-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 26, 77, 0.1);
+            border-top: 5px solid;
+            overflow: hidden;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.35s ease;
+            animation: cardIn 0.4s ease both;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(22px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .plant-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 16px 38px rgba(0, 26, 77, 0.18);
+        }
+
+        /* Contenedor de imagen */
+        .card-img-wrap {
+            width: 100%;
+            height: 155px;
+            background: linear-gradient(135deg, #e8f5e9, #f0f9f0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-img-emoji {
+            font-size: 68px;
+            user-select: none;
+            line-height: 1;
+        }
+
+        /* Badge de estado (esquina superior derecha de la imagen) */
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            pointer-events: none;
+        }
+
+        .badge-ok   { background: #d4edda; color: #155724; }
+        .badge-hoy  { background: #f8d7da; color: #721c24; animation: parpadeo 1.5s infinite; }
+        .badge-soon { background: #fff3cd; color: #856404; }
+
+        @keyframes parpadeo {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.65; }
+        }
+
+        /* Cuerpo de la tarjeta */
+        .card-body {
+            padding: 18px 20px 12px;
+        }
+
+        .card-nombre {
+            font-size: 18px;
+            font-weight: 700;
+            color: #001a4d;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-info {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        .card-info strong { color: #001a4d; }
+
+        .card-notas {
+            font-size: 12px;
+            color: #888;
+            font-style: italic;
+            background: #f7f8fc;
+            border-left: 3px solid #cce0ff;
+            border-radius: 0 8px 8px 0;
+            padding: 7px 10px;
+            margin-bottom: 12px;
+        }
+
+        /* Barra de progreso del ciclo de riego */
+        .progreso-wrap { margin-bottom: 14px; }
+
+        .progreso-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .progreso-bar {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progreso-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.7s ease;
+        }
+
+        .fill-ok    { background: linear-gradient(90deg, #28a745, #20c997); }
+        .fill-alerta{ background: linear-gradient(90deg, #dc3545, #fd7e14); }
+
+        /* Botones de acción */
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            padding: 0 20px 18px;
+        }
+
+        .btn-regar {
+            flex: 1;
+            padding: 10px 0;
+            background: linear-gradient(135deg, #0066cc, #0052a3);
+            color: white;
+            border: none;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .btn-regar:hover { background: linear-gradient(135deg, #0052a3, #003d7a); transform: translateY(-1px); }
+        .btn-regar.urgente { background: linear-gradient(135deg, #dc3545, #c82333); }
+        .btn-regar.urgente:hover { background: linear-gradient(135deg, #c82333, #a71d2a); }
+
+        .btn-icono {
+            padding: 10px 13px;
+            background: #f0f4ff;
+            color: #0066cc;
+            border: 1.5px solid #cce0ff;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1;
+        }
+        .btn-icono:hover { background: #0066cc; color: white; border-color: #0066cc; }
+        .btn-eliminar { color: #dc3545; border-color: #f5c6cb; }
+        .btn-eliminar:hover { background: #dc3545; color: white; border-color: #dc3545; }
+
+        /* ====================================================
+           ESTADO VACÍO
+        ==================================================== */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 40px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 16px rgba(0, 26, 77, 0.08);
+        }
+        .empty-emoji { font-size: 80px; margin-bottom: 20px; }
+        .empty-titulo { font-size: 24px; font-weight: 700; color: #001a4d; margin-bottom: 8px; }
+        .empty-sub { font-size: 15px; color: #888; }
+
+        /* Loading */
+        .loading {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px;
+            color: #0066cc;
+            font-size: 16px;
+        }
+
+        /* ====================================================
+           MODAL
+        ==================================================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 10, 40, 0.55);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 26, 77, 0.25);
+            transform: translateY(30px) scale(0.97);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.open .modal {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .modal-titulo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #001a4d;
+        }
+        .modal-close {
+            width: 34px; height: 34px;
+            background: #f0f4ff;
+            border: none;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0066cc;
+            transition: all 0.2s;
+        }
+        .modal-close:hover { background: #0066cc; color: white; }
+
+        /* Campos del formulario */
+        .form-group { margin-bottom: 18px; }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #001a4d;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 2px solid #cce0ff;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            color: #001a4d;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.12);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-fila {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .img-preview {
+            width: 100%;
+            height: 115px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-top: 8px;
+            border: 2px solid #cce0ff;
+            display: none;
+        }
+
+        .modal-acciones {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .btn-guardar {
+            flex: 1;
+            padding: 13px;
+            background: linear-gradient(135deg, #0066cc, #0052a3);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+        .btn-guardar:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0, 102, 204, 0.3);
+        }
+        .btn-guardar:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-cancelar {
+            padding: 13px 22px;
+            background: #f0f4ff;
+            color: #0066cc;
+            border: 2px solid #cce0ff;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+        .btn-cancelar:hover { background: #cce0ff; }
+
+        /* ====================================================
+           TOAST NOTIFICATION
+        ==================================================== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 13px 22px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            z-index: 2000;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(140%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .toast.visible { transform: translateX(0); }
+        .toast.exito   { background: linear-gradient(135deg, #28a745, #20c997); }
+        .toast.error   { background: linear-gradient(135deg, #dc3545, #c82333); }
+        .toast.info    { background: linear-gradient(135deg, #0066cc, #0052a3); }
+
+        /* ====================================================
+           RESPONSIVE
+        ==================================================== */
+        @media (max-width: 768px) {
+            .main-content  { padding: 20px; }
+            .navbar        { padding: 15px 20px; }
+            .logo          { font-size: 22px; }
+            .welcome-text  { display: none; }
+            .page-header   { flex-direction: column; align-items: flex-start; }
+            .page-header-left { flex-wrap: wrap; }
+            .page-title    { font-size: 26px; }
+            .plants-grid   { grid-template-columns: 1fr; }
+            .form-fila     { grid-template-columns: 1fr; }
+            .modal         { padding: 25px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================================
+         NAVBAR
+    ======================================================== -->
+    <nav class="navbar">
+        <a href="Final.html" class="logo"><span style="background:white;-webkit-text-fill-color:#001a4d;font-weight:700;padding:0 12px 0 40px;display:flex;align-items:center;margin-right:-8px;">org</span><span style="display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0;align-self:center;flex-shrink:0;position:relative;z-index:1;"></span><span style="-webkit-text-fill-color:white;font-weight:700;align-self:center;padding-left:8px;">BASE</span></a>
+        <div class="navbar-right">
+            <span class="welcome-text" id="welcomeText">¡Bienvenido!</span>
+            <button class="logout-btn" onclick="handleLogout()">Cerrar sesión</button>
+            <div class="profile-icon" id="profileIcon">S</div>
+        </div>
+    </nav>
+
+    <!-- ========================================================
+         CONTENIDO PRINCIPAL
+    ======================================================== -->
+    <main class="main-content">
+
+        <!-- Encabezado -->
+        <div class="page-header">
+            <div class="page-header-left">
+                <a href="Final.html" class="back-btn">← Volver</a>
+                <div>
+                    <div class="page-title">🌿 Mis Plantas</div>
+                    <div class="page-subtitle">Gestiona el cuidado de tus plantas del hogar</div>
+                </div>
+            </div>
+            <button class="add-btn" onclick="abrirModal()">+ Agregar Planta</button>
+        </div>
+
+        <!-- Chips de estadísticas -->
+        <div class="stats-bar">
+            <div class="stat-chip">🌿 <span id="statTotal">0</span> plantas</div>
+            <div class="stat-chip alerta" id="chipAlerta" style="display:none">
+                🚿 <span id="statAlerta">0</span> necesitan riego hoy
+            </div>
+        </div>
+
+        <!-- Grid de plantas -->
+        <div class="plants-grid" id="plantsGrid">
+            <div class="loading">Cargando plantas... 🌱</div>
+        </div>
+
+    </main>
+
+    <!-- ========================================================
+         MODAL: Agregar / Editar Planta
+    ======================================================== -->
+    <div class="modal-overlay" id="modalOverlay" onclick="cerrarModalOverlay(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-titulo" id="modalTitulo">🌱 Nueva Planta</div>
+                <button class="modal-close" onclick="cerrarModal()">✕</button>
+            </div>
+
+            <form id="plantaForm" onsubmit="guardarPlanta(event)">
+                <!-- ID oculto para edición -->
+                <input type="hidden" id="editId">
+
+                <div class="form-group">
+                    <label>Nombre de la planta *</label>
+                    <input type="text" id="fNombre" placeholder="Ej: Potus, Cactus, Orquídea..." required maxlength="60">
+                </div>
+
+                <div class="form-group">
+                    <label>URL de imagen (opcional)</label>
+                    <input type="url" id="fImagen" placeholder="https://..." oninput="previsualizarImagen()">
+                    <img id="imgPreview" class="img-preview" alt="Vista previa">
+                </div>
+
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label>Frecuencia de riego (días) *</label>
+                        <input type="number" id="fFrecuencia" min="1" max="365" placeholder="Ej: 3" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Último riego *</label>
+                        <input type="date" id="fUltimoRiego" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Notas (opcional)</label>
+                    <textarea id="fNotas" placeholder="Ej: Luz indirecta, abono cada mes..."></textarea>
+                </div>
+
+                <div class="modal-acciones">
+                    <button type="button" class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn-guardar" id="btnGuardar">💾 Guardar Planta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast de notificaciones -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ========================================================
+         JAVASCRIPT
+    ======================================================== -->
+    <script>
+        // ============================================================
+        // CONFIGURACIÓN SUPABASE
+        // ============================================================
+        const sbUrl = 'https://vfqjcyecqecfrevmnivy.supabase.co';
+        const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcWpjeWVjcWVjZnJldm1uaXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTc3NTQsImV4cCI6MjA5ODUzMzc1NH0.dNdouTXa3p1ctM6IdJXm0U_bqopEFAh5NoJCeYNDdzk';
+        const mySupabase = supabase.createClient(sbUrl, sbKey);
+
+        // Colores arcoíris que rotan por tarjeta (igual que el dashboard)
+        const COLORES = ['#ff0000', '#ff7f00', '#ffdd00', '#00aa00', '#0066cc', '#7f00ff', '#00ccff'];
+
+        // Emojis de plantas para cuando no hay imagen
+        const EMOJIS_PLANTAS = ['🌿', '🌱', '🪴', '🌺', '🌸', '🌻', '🌵', '🍀'];
+
+        let usuarioActual = null;
+
+        // ============================================================
+        // AUTENTICACIÓN
+        // ============================================================
+        mySupabase.auth.getSession().then(({ data }) => {
+            if (data.session) {
+                usuarioActual = data.session.user;
+                iniciarUI(usuarioActual);
+                cargarPlantas();
+            } else {
+                // Sin sesión → volver al login
+                window.location.href = 'Final.html';
+            }
+        });
+
+        mySupabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_OUT') window.location.href = 'Final.html';
+        });
+
+        function iniciarUI(user) {
+            const meta = user.user_metadata || {};
+            const fullName = (meta.full_name || ((meta.nombre || '') + ' ' + (meta.apellido || '')).trim()) || user.email.split('@')[0];
+            const inicial = fullName.charAt(0).toUpperCase();
+            document.getElementById('welcomeText').textContent = `¡Bienvenido, ${fullName}!`;
+            document.getElementById('profileIcon').textContent = inicial;
+        }
+
+        async function handleLogout() {
+            await mySupabase.auth.signOut();
+            window.location.href = 'Final.html';
+        }
+
+        // ============================================================
+        // LÓGICA DE RIEGO
+        // ============================================================
+
+        /** Días transcurridos desde la última fecha de riego */
+        function diasDesde(fechaISO) {
+            if (!fechaISO) return 0;
+            const hoy    = new Date(); hoy.setHours(0, 0, 0, 0);
+            const ultima = new Date(fechaISO + 'T00:00:00');
+            return Math.floor((hoy - ultima) / 86400000);
+        }
+
+        /** Devuelve true si la planta necesita riego hoy (o está atrasada) */
+        function necesitaRiego(planta) {
+            return diasDesde(planta.ultima_fecha_riego) >= planta.frecuencia_riego;
+        }
+
+        /** Texto y clase CSS para el badge de estado */
+        function estadoRiego(planta) {
+            const dias   = diasDesde(planta.ultima_fecha_riego);
+            const frec   = planta.frecuencia_riego;
+            const faltan = frec - dias;
+
+            if (dias >= frec) {
+                const atrasado = dias - frec;
+                return {
+                    texto : atrasado === 0 ? '🚿 Regar hoy' : `⚠️ Atrasado ${atrasado}d`,
+                    clase : 'badge-hoy'
+                };
+            }
+            if (faltan === 1) return { texto: '💧 Mañana',        clase: 'badge-soon' };
+            return             { texto: `✅ En ${faltan} días`, clase: 'badge-ok'   };
+        }
+
+        // ============================================================
+        // CARGA Y RENDERIZADO
+        // ============================================================
+        async function cargarPlantas() {
+            if (!usuarioActual) return;
+
+            document.getElementById('plantsGrid').innerHTML =
+                '<div class="loading">Cargando plantas... 🌱</div>';
+
+            const { data, error } = await mySupabase
+                .from('plantas')
+                .select('*')
+                .eq('user_id', usuarioActual.id)
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error('Error cargando plantas:', error);
+                document.getElementById('plantsGrid').innerHTML =
+                    '<div class="loading">Error al cargar plantas.</div>';
+                return;
+            }
+
+            renderizarPlantas(data || []);
+        }
+
+        function renderizarPlantas(lista) {
+            const grid       = document.getElementById('plantsGrid');
+            const statTotal  = document.getElementById('statTotal');
+            const statAlerta = document.getElementById('statAlerta');
+            const chipAlerta = document.getElementById('chipAlerta');
+
+            statTotal.textContent  = lista.length;
+            const nAlerta          = lista.filter(p => necesitaRiego(p)).length;
+            statAlerta.textContent = nAlerta;
+            chipAlerta.style.display = nAlerta > 0 ? 'flex' : 'none';
+
+            if (lista.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-emoji">🪴</div>
+                        <div class="empty-titulo">Sin plantas registradas</div>
+                        <div class="empty-sub">Agrega tu primera planta con el botón "Agregar Planta"</div>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = lista
+                .map((planta, i) => construirTarjeta(planta, i))
+                .join('');
+        }
+
+        function construirTarjeta(planta, indice) {
+            const color  = COLORES[indice % COLORES.length];
+            const estado = estadoRiego(planta);
+            const dias   = diasDesde(planta.ultima_fecha_riego);
+            const frec   = planta.frecuencia_riego;
+            const alerta = necesitaRiego(planta);
+            const emoji  = EMOJIS_PLANTAS[indice % EMOJIS_PLANTAS.length];
+
+            // Barra de progreso (porcentaje del ciclo transcurrido)
+            const pct       = Math.min(100, Math.round((dias / frec) * 100));
+            const fillClass = alerta ? 'fill-alerta' : 'fill-ok';
+
+            // Sección de imagen
+            let imgHtml;
+            if (planta.imagen_url) {
+                imgHtml = `
+                    <img src="${esc(planta.imagen_url)}" class="card-img" alt="${esc(planta.nombre)}"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="card-img-emoji" style="display:none">${emoji}</div>`;
+            } else {
+                imgHtml = `<div class="card-img-emoji">${emoji}</div>`;
+            }
+
+            const notasHtml = planta.notas
+                ? `<div class="card-notas">📝 ${escHtml(planta.notas)}</div>`
+                : '';
+
+            const claseBtn = alerta ? 'btn-regar urgente' : 'btn-regar';
+
+            return `
+            <div class="plant-card" id="card-${planta.id}" style="border-top-color:${color}">
+                <div class="card-img-wrap">
+                    ${imgHtml}
+                    <span class="status-badge ${estado.clase}">${estado.texto}</span>
+                </div>
+                <div class="card-body">
+                    <div class="card-nombre" title="${esc(planta.nombre)}">${escHtml(planta.nombre)}</div>
+                    <div class="card-info">
+                        <strong>🗓 Último riego:</strong> hace ${dias} día${dias !== 1 ? 's' : ''}<br>
+                        <strong>💧 Frecuencia:</strong> cada ${frec} día${frec !== 1 ? 's' : ''}
+                    </div>
+                    ${notasHtml}
+                    <div class="progreso-wrap">
+                        <div class="progreso-labels">
+                            <span>Ciclo de riego</span>
+                            <span>${Math.min(dias, frec)} / ${frec} días</span>
+                        </div>
+                        <div class="progreso-bar">
+                            <div class="progreso-fill ${fillClass}" style="width:${pct}%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="${claseBtn}" onclick="regarPlanta('${planta.id}')">
+                        💧 Regar
+                    </button>
+                    <button class="btn-icono" onclick="editarPlanta('${planta.id}')" title="Editar">✏️</button>
+                    <button class="btn-icono btn-eliminar" onclick="eliminarPlanta('${planta.id}','${esc(planta.nombre)}')" title="Eliminar">🗑️</button>
+                </div>
+            </div>`;
+        }
+
+        // ============================================================
+        // MODAL: ABRIR / CERRAR
+        // ============================================================
+        function abrirModal(planta = null) {
+            document.getElementById('editId').value = '';
+            document.getElementById('plantaForm').reset();
+            document.getElementById('imgPreview').style.display = 'none';
+
+            if (planta) {
+                // Modo edición
+                document.getElementById('modalTitulo').textContent = '✏️ Editar Planta';
+                document.getElementById('btnGuardar').textContent  = '💾 Guardar Cambios';
+                document.getElementById('editId').value            = planta.id;
+                document.getElementById('fNombre').value           = planta.nombre       || '';
+                document.getElementById('fImagen').value           = planta.imagen_url   || '';
+                document.getElementById('fFrecuencia').value       = planta.frecuencia_riego || '';
+                document.getElementById('fNotas').value            = planta.notas        || '';
+                if (planta.ultima_fecha_riego) {
+                    document.getElementById('fUltimoRiego').value  = planta.ultima_fecha_riego.substring(0, 10);
+                }
+                previsualizarImagen();
+            } else {
+                // Modo nuevo
+                document.getElementById('modalTitulo').textContent = '🌱 Nueva Planta';
+                document.getElementById('btnGuardar').textContent  = '💾 Guardar Planta';
+                document.getElementById('fUltimoRiego').value      = hoyISO();
+            }
+
+            document.getElementById('modalOverlay').classList.add('open');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalOverlay').classList.remove('open');
+        }
+
+        function cerrarModalOverlay(e) {
+            if (e.target === document.getElementById('modalOverlay')) cerrarModal();
+        }
+
+        function previsualizarImagen() {
+            const url     = document.getElementById('fImagen').value.trim();
+            const preview = document.getElementById('imgPreview');
+            if (url) {
+                preview.src    = url;
+                preview.style.display = 'block';
+                preview.onerror = () => { preview.style.display = 'none'; };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // ============================================================
+        // CRUD: CREAR / EDITAR
+        // ============================================================
+        async function guardarPlanta(e) {
+            e.preventDefault();
+            if (!usuarioActual) return;
+
+            const btnGuardar = document.getElementById('btnGuardar');
+            btnGuardar.disabled    = true;
+            btnGuardar.textContent = 'Guardando...';
+
+            const editId     = document.getElementById('editId').value;
+            const nombre     = document.getElementById('fNombre').value.trim();
+            const imagenUrl  = document.getElementById('fImagen').value.trim() || null;
+            const frecuencia = parseInt(document.getElementById('fFrecuencia').value);
+            const ultimoRiego= document.getElementById('fUltimoRiego').value;   // YYYY-MM-DD
+            const notas      = document.getElementById('fNotas').value.trim() || null;
+
+            const payload = {
+                nombre,
+                imagen_url         : imagenUrl,
+                frecuencia_riego   : frecuencia,
+                ultima_fecha_riego : ultimoRiego,
+                notas
+            };
+
+            let error;
+
+            if (editId) {
+                // Actualizar planta existente
+                ({ error } = await mySupabase
+                    .from('plantas')
+                    .update({ ...payload, updated_at: new Date().toISOString() })
+                    .eq('id', editId)
+                    .eq('user_id', usuarioActual.id));
+            } else {
+                // Insertar nueva planta
+                ({ error } = await mySupabase
+                    .from('plantas')
+                    .insert({ ...payload, user_id: usuarioActual.id }));
+            }
+
+            btnGuardar.disabled    = false;
+            btnGuardar.textContent = editId ? '💾 Guardar Cambios' : '💾 Guardar Planta';
+
+            if (error) {
+                console.error('Error guardando planta:', error);
+                mostrarToast('Error al guardar la planta', 'error');
+            } else {
+                cerrarModal();
+                mostrarToast(editId ? 'Planta actualizada ✅' : '¡Planta agregada! 🌱', 'exito');
+                await cargarPlantas();
+            }
+        }
+
+        // ============================================================
+        // CRUD: REGAR
+        // ============================================================
+        async function regarPlanta(id) {
+            const hoy = hoyISO();
+            const { error } = await mySupabase
+                .from('plantas')
+                .update({ ultima_fecha_riego: hoy, updated_at: new Date().toISOString() })
+                .eq('id', id)
+                .eq('user_id', usuarioActual.id);
+
+            if (error) {
+                mostrarToast('Error al registrar el riego', 'error');
+            } else {
+                mostrarToast('💧 ¡Riego registrado!', 'info');
+                await cargarPlantas();
+            }
+        }
+
+        // ============================================================
+        // CRUD: EDITAR (carga datos y abre modal)
+        // ============================================================
+        async function editarPlanta(id) {
+            const { data, error } = await mySupabase
+                .from('plantas')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error || !data) {
+                mostrarToast('Error al cargar la planta', 'error');
+                return;
+            }
+            abrirModal(data);
+        }
+
+        // ============================================================
+        // CRUD: ELIMINAR
+        // ============================================================
+        async function eliminarPlanta(id, nombre) {
+            if (!confirm(`¿Eliminar la planta "${nombre}"?\nEsta acción no se puede deshacer.`)) return;
+
+            // Animación de salida
+            const card = document.getElementById(`card-${id}`);
+            if (card) {
+                card.style.transition = 'opacity 0.3s, transform 0.3s';
+                card.style.opacity    = '0';
+                card.style.transform  = 'scale(0.88)';
+            }
+            await new Promise(r => setTimeout(r, 300));
+
+            const { error } = await mySupabase
+                .from('plantas')
+                .delete()
+                .eq('id', id)
+                .eq('user_id', usuarioActual.id);
+
+            if (error) {
+                mostrarToast('Error al eliminar la planta', 'error');
+            } else {
+                mostrarToast(`"${nombre}" eliminada 🗑️`, 'info');
+                await cargarPlantas();
+            }
+        }
+
+        // ============================================================
+        // UTILIDADES
+        // ============================================================
+
+        /** Fecha de hoy en formato YYYY-MM-DD */
+        function hoyISO() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        /** Escapa HTML para evitar XSS */
+        function escHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g,  '&amp;')
+                .replace(/</g,  '&lt;')
+                .replace(/>/g,  '&gt;')
+                .replace(/"/g,  '&quot;');
+        }
+
+        /** Escapa atributos HTML */
+        function esc(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Toast de notificación
+        let _toastTimer;
+        function mostrarToast(mensaje, tipo = 'exito') {
+            const el    = document.getElementById('toast');
+            el.textContent = mensaje;
+            el.className   = `toast visible ${tipo}`;
+            clearTimeout(_toastTimer);
+            _toastTimer = setTimeout(() => el.classList.remove('visible'), 3500);
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Comida - org.BASE</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%);
+            min-height: 100vh;
+            color: #001a4d;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #001a4d 0%, #003d99 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .meal-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .meal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #001a4d;
+            margin-bottom: 8px;
+        }
+
+        .meal-date {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #001a4d;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #99ccff;
+            padding-bottom: 8px;
+        }
+
+        .person-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #0066cc;
+        }
+
+        .person-name {
+            font-weight: 700;
+            color: #001a4d;
+            margin-bottom: 8px;
+        }
+
+        .item-list {
+            margin-bottom: 10px;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 4px 0;
+            color: #333;
+        }
+
+        .person-total {
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 8px;
+            padding-top: 8px;
+        }
+
+        .total-section {
+            background: linear-gradient(135deg, #fffaf0 0%, #fff5e6 100%);
+            border: 2px solid #ffd700;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .total-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .total-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0066cc;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.1);
+        }
+
+        .footer p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .status-expired {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #99ccff;
+            border-radius: 50%;
+            border-top-color: #0066cc;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Tu Comida</h1>
+            <p>Detalles de la cuenta compartida</p>
+        </div>
+
+        <div id="content">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 15px;">Cargando información...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN SUPABASE
+        const sbUrl = 'https://vfqjcyecqecfrevmnivy.supabase.co';
+        const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcWpjeWVjcWVjZnJldm1uaXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTc3NTQsImV4cCI6MjA5ODUzMzc1NH0.dNdouTXa3p1ctM6IdJXm0U_bqopEFAh5NoJCeYNDdzk';
+        const mySupabase = supabase.createClient(sbUrl, sbKey);
+
+        function formatNumber(num) {
+            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        async function loadMeal() {
+            const params = new URLSearchParams(window.location.search);
+            const mealId = params.get('id');
+
+            if (!mealId) {
+                document.getElementById('content').innerHTML = '<div class="status-expired">ID de comida no válido</div>';
+                return;
+            }
+
+            try {
+                // Buscar en Supabase
+                const { data, error } = await mySupabase
+                    .from('meals')
+                    .select('*')
+                    .eq('id', mealId)
+                    .single();
+
+                if (error || !data) {
+                    // Fallback a localStorage
+                    const savedData = localStorage.getItem(`meal_${mealId}`);
+                    if (!savedData) {
+                        document.getElementById('content').innerHTML = '<div class="status-expired">Esta comida ha expirado o no existe</div>';
+                        return;
+                    }
+                    const meal = JSON.parse(savedData);
+                    renderMeal(meal);
+                    return;
+                }
+
+                // Verificar si la comida ha expirado
+                const expiresAt = new Date(data.expires_at);
+                const now = new Date();
+                
+                if (now > expiresAt) {
+                    document.getElementById('content').innerHTML = '<div class="status-expired">⏰ Esta comida ha expirado (válida por 24 horas)</div>';
+                    return;
+                }
+
+                // Parsear el JSON del campo data
+                const mealData = JSON.parse(data.data);
+                const meal = {
+                    ...mealData,
+                    name: data.name,
+                    createdAt: data.created_at,
+                    expiresAt: data.expires_at
+                };
+
+                renderMeal(meal);
+            } catch (err) {
+                console.error('Error cargando comida:', err);
+                document.getElementById('content').innerHTML = '<div class="status-expired">Error al cargar la comida</div>';
+            }
+        }
+
+        function renderMeal(meal) {
+            const expiresAt = new Date(meal.expiresAt);
+            const now = new Date();
+
+            if (now > expiresAt) {
+                document.getElementById('content').innerHTML = '<div class="status-expired">⏰ Esta comida ha expirado (válida por 24 horas)</div>';
+                return;
+            }
+
+            let html = `
+                <div class="meal-card">
+                    <div class="meal-title">${meal.name}</div>
+                    <div class="meal-date">Fecha: ${new Date(meal.createdAt).toLocaleDateString('es-ES')} ${new Date(meal.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
+
+                    <div class="section-title">👥 Desglose por Persona</div>
+            `;
+
+            // Agrupar ítems por persona
+            meal.participants.forEach(p => {
+                const personItems = meal.items.filter(i => i.assignedTo.includes(p.id));
+                const personSubtotal = meal.personTotals[p.id] || 0;
+                const discountPerson = personSubtotal * (meal.discountPercent / 100);
+                const tipPerson = (personSubtotal - discountPerson) * (meal.tipPercent / 100);
+                const totalPerson = personSubtotal - discountPerson + tipPerson;
+
+                html += `
+                    <div class="person-section">
+                        <div class="person-name">${p.name}</div>
+                        <div class="item-list">
+                            ${personItems.map(item => `
+                                <div class="item">
+                                    <span>${item.name}</span>
+                                    <span>$${formatNumber(item.price)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="person-total">
+                            <span>Total:</span>
+                            <span style="color: #0066cc;">$${formatNumber(totalPerson)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    <div class="total-section">
+                        <div class="total-label">TOTAL DE LA CUENTA</div>
+                        <div class="total-amount">$${formatNumber(meal.grandTotal)}</div>
+                        ${meal.discountPercent > 0 ? `<div style="font-size: 12px; color: #ff6b6b; margin-top: 8px;">Descuento: ${meal.discountPercent}%</div>` : ''}
+                        ${meal.tipPercent > 0 ? `<div style="font-size: 12px; color: #00aa00; margin-top: 4px;">Propina: ${meal.tipPercent}%</div>` : ''}
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <p>🔐 Esta es una vista de solo lectura compartida por 24 horas.</p>
+                    <p style="margin-top: 10px; font-size: 12px; color: #999;">Expira: ${expiresAt.toLocaleDateString('es-ES')} a las ${expiresAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        // Cargar al iniciar
+        loadMeal();
+    </script>
+</body>
+</html>

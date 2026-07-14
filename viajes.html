@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viajes - org.BASE</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%);
+            min-height: 100vh;
+            color: #001a4d;
+        }
+
+        /* BARRA DE NAVEGACIÓN */
+        .navbar {
+            background: linear-gradient(135deg, #001a4d 0%, #003d99 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2);
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .logo {
+            font-size: 38px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: stretch;
+            align-self: stretch;
+            margin: -20px 0 -20px -40px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            background: #e6f0ff;
+            color: #0066cc;
+            border: 2px solid #99ccff;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+
+        .back-btn:hover {
+            background: #0066cc;
+            color: white;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .welcome-text {
+            color: white;
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 107, 107, 0.3);
+        }
+
+        .profile-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            color: #001a4d;
+        }
+
+        .btn-add-trip {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-trip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.3);
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 26, 77, 0.2);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: #001a4d;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #001a4d;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #99ccff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 8px rgba(0, 102, 204, 0.2);
+        }
+
+        .participants-container {
+            background: #f0e6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .participant-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .participant-input input {
+            flex: 1;
+        }
+
+        .btn-remove {
+            padding: 8px 12px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-remove:hover {
+            background: #ff4444;
+        }
+
+        .btn-add-participant {
+            padding: 8px 15px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-add-participant:hover {
+            background: #0052a3;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn-create {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-create:hover {
+            background: linear-gradient(135deg, #0052a3 0%, #003d99 100%);
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            background: #e6e6e6;
+            color: #001a4d;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel:hover {
+            background: #cccccc;
+        }
+
+        /* LISTA DE VIAJES */
+        .trips-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .trip-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 6px 20px rgba(0, 26, 77, 0.1);
+            border-left: 5px solid #ffaa00;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .trip-card:hover {
+            box-shadow: 0 12px 30px rgba(0, 26, 77, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .trip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .trip-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #001a4d;
+        }
+
+        .trip-title-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-edit-trip {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-edit-trip:hover {
+            background: rgba(0, 102, 204, 0.1);
+        }
+
+        .trip-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #0066cc;
+            font-size: 16px;
+        }
+
+        .trip-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-view {
+            flex: 1;
+            padding: 10px;
+            background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-view:hover {
+            background: linear-gradient(135deg, #0052a3 0%, #003d99 100%);
+        }
+
+        .btn-delete {
+            padding: 10px 15px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-delete:hover {
+            background: #ff4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .modal-content {
+                padding: 30px 20px;
+            }
+
+            .trip-stats {
+                flex-wrap: wrap;
+            }
+
+            .navbar {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="navbar">
+        <a href="Final.html" class="logo"><span style="background:white;-webkit-text-fill-color:#001a4d;font-weight:700;padding:0 12px 0 40px;display:flex;align-items:center;margin-right:-8px;">org</span><span style="display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0;align-self:center;flex-shrink:0;position:relative;z-index:1;"></span><span style="-webkit-text-fill-color:white;font-weight:700;align-self:center;padding-left:8px;">BASE</span></a>
+        <div class="navbar-right">
+            <span class="welcome-text" id="welcomeText">¡Bienvenido!</span>
+            <button class="logout-btn" onclick="handleLogout()">Cerrar sesión</button>
+            <div class="profile-icon" id="profileIcon">S</div>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="container">
+        <div class="page-header">
+            <div style="display:flex;align-items:center;gap:20px;">
+                <a href="Final.html" class="back-btn">← Volver</a>
+                <h1>✈️ Mis Viajes</h1>
+            </div>
+            <button class="btn-add-trip" onclick="openCreateTripModal()">+ Crear Viaje</button>
+        </div>
+
+        <div class="trips-list" id="tripsList">
+            <!-- Los viajes se cargarán aquí dinámicamente -->
+        </div>
+    </div>
+
+    <!-- MODAL PARA CREAR VIAJE -->
+    <div class="modal" id="createTripModal">
+        <div class="modal-content">
+            <div class="modal-header">Crear Nuevo Viaje</div>
+            
+            <div class="form-group">
+                <label for="tripName">Nombre del Viaje:</label>
+                <input type="text" id="tripName" placeholder="Ej: Buenos Aires 2024">
+            </div>
+
+            <div class="form-group">
+                <label for="tripDescription">Descripción (opcional):</label>
+                <textarea id="tripDescription" placeholder="Detalles del viaje..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Participantes:</label>
+                <div class="participants-container" id="participantsContainer">
+                    <div class="participant-input">
+                        <input type="text" placeholder="Nombre del participante" class="participant-input-field">
+                        <button class="btn-remove" onclick="removeParticipantInput(this)">✕</button>
+                    </div>
+                </div>
+                <button class="btn-add-participant" onclick="addParticipantInput()">+ Agregar Participante</button>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-create" onclick="createTrip()">Crear Viaje</button>
+                <button class="btn-cancel" onclick="closeCreateTripModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA SELECCIONAR PARTICIPANTE -->
+    <div class="modal" id="selectParticipantModal">
+        <div class="modal-content">
+            <div class="modal-header">¿Cuál de estos participantes eres tú?</div>
+            <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Esta información se usa para calcular tus deudas correctamente.</p>
+            
+            <div id="participantSelectContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Se llenará dinámicamente -->
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 30px;">
+                <button class="btn-cancel" onclick="closeSelectParticipantModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA EDITAR VIAJE -->
+    <div class="modal" id="editTripModal">
+        <div class="modal-content">
+            <div class="modal-header">Editar Viaje</div>
+            
+            <div class="form-group">
+                <label for="editTripName">Nombre del Viaje:</label>
+                <input type="text" id="editTripName" placeholder="Ej: Buenos Aires 2024">
+            </div>
+
+            <div class="form-group">
+                <label for="editTripDescription">Descripción (opcional):</label>
+                <textarea id="editTripDescription" placeholder="Detalles del viaje..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Participantes:</label>
+                <div class="participants-container" id="editParticipantsContainer">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+                <button class="btn-add-participant" onclick="addEditParticipantInput()">+ Agregar Participante</button>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-create" onclick="saveEditedTrip()">Guardar Cambios</button>
+                <button class="btn-cancel" onclick="closeEditTripModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN SUPABASE
+        const sbUrl = 'https://vfqjcyecqecfrevmnivy.supabase.co';
+        const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcWpjeWVjcWVjZnJldm1uaXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTc3NTQsImV4cCI6MjA5ODUzMzc1NH0.dNdouTXa3p1ctM6IdJXm0U_bqopEFAh5NoJCeYNDdzk';
+        const mySupabase = supabase.createClient(sbUrl, sbKey);
+
+        let trips = [];
+
+        // Cargar viajes de Supabase
+        async function loadTrips() {
+            try {
+                const user = await mySupabase.auth.getUser();
+                if (!user.data.user) {
+                    trips = [];
+                    return;
+                }
+
+                const { data, error } = await mySupabase
+                    .from('trips')
+                    .select(`
+                        id,
+                        name,
+                        description,
+                        my_participant_name,
+                        expenses,
+                        created_at,
+                        trip_participants (id, name)
+                    `)
+                    .eq('user_id', user.data.user.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Error cargando viajes:', error);
+                    trips = [];
+                    return;
+                }
+
+                // Mapear datos de Supabase al formato de la app
+                trips = (data || []).map(trip => ({
+                    id: trip.id,
+                    name: trip.name,
+                    description: trip.description,
+                    participants: trip.trip_participants || [],
+                    expenses: Array.isArray(trip.expenses) ? trip.expenses : [],
+                    createdAt: trip.created_at,
+                    myParticipantName: trip.my_participant_name
+                }));
+
+                console.log('Viajes cargados:', trips.length);
+            } catch (e) {
+                console.error('Error en loadTrips:', e);
+                trips = [];
+            }
+        }
+
+        // Guardar viaje en Supabase
+        async function saveTrip(trip) {
+            try {
+                const user = await mySupabase.auth.getUser();
+                if (!user.data.user) return;
+
+                // Insertar viaje
+                const { data: newTrip, error: tripError } = await mySupabase
+                    .from('trips')
+                    .insert([{
+                        user_id: user.data.user.id,
+                        name: trip.name,
+                        description: trip.description,
+                        my_participant_name: trip.myParticipantName,
+                        created_at: trip.createdAt
+                    }])
+                    .select()
+                    .single();
+
+                if (tripError) {
+                    console.error('Error guardando viaje:', tripError);
+                    return null;
+                }
+
+                // Insertar participantes
+                if (trip.participants && trip.participants.length > 0) {
+                    const participants = trip.participants.map(p => ({
+                        trip_id: newTrip.id,
+                        name: p.name
+                    }));
+
+                    const { error: participantError } = await mySupabase
+                        .from('trip_participants')
+                        .insert(participants);
+
+                    if (participantError) {
+                        console.error('Error guardando participantes:', participantError);
+                    }
+                }
+
+                console.log('Viaje guardado:', newTrip.id);
+                return newTrip.id;
+            } catch (e) {
+                console.error('Error en saveTrip:', e);
+                return null;
+            }
+        }
+
+        // Actualizar viaje en Supabase
+        async function updateTrip(trip) {
+            try {
+                const user = await mySupabase.auth.getUser();
+                if (!user.data.user) return false;
+
+                // Actualizar viaje
+                const { error: updateError } = await mySupabase
+                    .from('trips')
+                    .update({
+                        name: trip.name,
+                        description: trip.description
+                    })
+                    .eq('id', trip.id)
+                    .eq('user_id', user.data.user.id);
+
+                if (updateError) {
+                    console.error('Error actualizando viaje:', updateError);
+                    return false;
+                }
+
+                // Eliminar participantes antiguos
+                await mySupabase
+                    .from('trip_participants')
+                    .delete()
+                    .eq('trip_id', trip.id);
+
+                // Insertar nuevos participantes
+                if (trip.participants && trip.participants.length > 0) {
+                    const participants = trip.participants.map(p => ({
+                        trip_id: trip.id,
+                        name: p.name
+                    }));
+
+                    const { error: participantError } = await mySupabase
+                        .from('trip_participants')
+                        .insert(participants);
+
+                    if (participantError) {
+                        console.error('Error actualizando participantes:', participantError);
+                    }
+                }
+
+                console.log('Viaje actualizado:', trip.id);
+                return true;
+            } catch (e) {
+                console.error('Error en updateTrip:', e);
+                return false;
+            }
+        }
+
+        // Eliminar viaje de Supabase
+        async function deleteTrip(tripId) {
+            try {
+                const user = await mySupabase.auth.getUser();
+                if (!user.data.user) return false;
+
+                const { error } = await mySupabase
+                    .from('trips')
+                    .delete()
+                    .eq('id', tripId)
+                    .eq('user_id', user.data.user.id);
+
+                if (error) {
+                    console.error('Error eliminando viaje:', error);
+                    return false;
+                }
+
+                console.log('Viaje eliminado:', tripId);
+                return true;
+            } catch (e) {
+                console.error('Error en deleteTrip:', e);
+                return false;
+            }
+        }
+
+        // Guardar (usado por compatibilidad)
+        function saveTrips() {
+            // Aquí podría sincronizarse si es necesario
+        }
+
+        let currentUserName = '';
+
+        // VERIFICAR SESIÓN
+        mySupabase.auth.getSession().then(({ data }) => {
+            if (data.session) {
+                const _u = data.session.user;
+                const _meta = _u.user_metadata || {};
+                currentUserName = (_meta.full_name || ((_meta.nombre || '') + ' ' + (_meta.apellido || '')).trim()) || _u.email.split('@')[0];
+                document.getElementById('welcomeText').textContent = `¡Bienvenido, ${currentUserName}!`;
+                document.getElementById('profileIcon').textContent = currentUserName.charAt(0).toUpperCase();
+                
+                // Cargar viajes de Supabase
+                loadTrips().then(() => renderTrips());
+            } else {
+                goBack();
+            }
+        });
+
+        // ABRIR MODAL DE CREAR VIAJE
+        function openCreateTripModal() {
+            document.getElementById('createTripModal').classList.add('active');
+        }
+
+        // CERRAR MODAL
+        function closeCreateTripModal() {
+            document.getElementById('createTripModal').classList.remove('active');
+            document.getElementById('tripName').value = '';
+            document.getElementById('tripDescription').value = '';
+            document.getElementById('participantsContainer').innerHTML = `
+                <div class="participant-input">
+                    <input type="text" placeholder="Nombre del participante" class="participant-input-field">
+                    <button class="btn-remove" onclick="removeParticipantInput(this)">✕</button>
+                </div>
+            `;
+        }
+
+        // AGREGAR CAMPO DE PARTICIPANTE
+        function addParticipantInput() {
+            const container = document.getElementById('participantsContainer');
+            const div = document.createElement('div');
+            div.className = 'participant-input';
+            div.innerHTML = `
+                <input type="text" placeholder="Nombre del participante" class="participant-input-field">
+                <button class="btn-remove" onclick="removeParticipantInput(this)">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // REMOVER CAMPO DE PARTICIPANTE
+        function removeParticipantInput(btn) {
+            btn.parentElement.remove();
+        }
+
+        // CREAR VIAJE
+        let tempTripData = null; // Almacenar datos temporales del viaje durante creación
+
+        function createTrip() {
+            const tripName = document.getElementById('tripName').value;
+            const tripDescription = document.getElementById('tripDescription').value;
+            const participantInputs = document.querySelectorAll('.participant-input-field');
+            const participants = [];
+
+            participantInputs.forEach(input => {
+                if (input.value.trim()) {
+                    participants.push({
+                        id: String(Date.now() + Math.random()),
+                        name: input.value.trim()
+                    });
+                }
+            });
+
+            if (!tripName || participants.length === 0) {
+                alert('Por favor ingresa un nombre y al menos un participante');
+                return;
+            }
+
+            // Guardar temporalmente los datos y mostrar modal de selección
+            tempTripData = {
+                name: tripName,
+                description: tripDescription,
+                participants: participants
+            };
+
+            closeCreateTripModal();
+            openSelectParticipantModal(participants);
+        }
+
+        function openSelectParticipantModal(participants) {
+            const container = document.getElementById('participantSelectContainer');
+            container.innerHTML = '';
+
+            participants.forEach(participant => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-create';
+                btn.style.cssText = 'width: 100%; padding: 15px; text-align: left; justify-content: flex-start;';
+                btn.textContent = `👤 ${participant.name}`;
+                btn.onclick = () => finalizeTripCreation(participant.name);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('selectParticipantModal').classList.add('active');
+        }
+
+        function finalizeTripCreation(myParticipantName) {
+            if (!tempTripData) return;
+
+            const trip = {
+                id: undefined,  // Se generará en Supabase
+                name: tempTripData.name,
+                description: tempTripData.description,
+                participants: tempTripData.participants,
+                expenses: [],
+                createdAt: new Date().toISOString(),
+                createdBy: currentUserName,
+                myParticipantName: myParticipantName
+            };
+
+            // Guardar en Supabase
+            saveTrip(trip).then(newId => {
+                if (newId) {
+                    trip.id = newId;
+                    trips.push(trip);
+                    renderTrips();
+                    closeSelectParticipantModal();
+                    tempTripData = null;
+                } else {
+                    alert('Error al guardar el viaje');
+                }
+            });
+        }
+
+        function closeSelectParticipantModal() {
+            document.getElementById('selectParticipantModal').classList.remove('active');
+        }
+
+        // VARIABLES PARA EDICIÓN DE VIAJE
+        let editingTripId = null;
+
+        // ABRIR MODAL DE EDITAR VIAJE
+        function openEditTripModal(tripId) {
+            editingTripId = tripId;
+            const trip = trips.find(t => t.id === tripId);
+            
+            if (!trip) return;
+
+            // Llenar los datos del viaje
+            document.getElementById('editTripName').value = trip.name;
+            document.getElementById('editTripDescription').value = trip.description || '';
+
+            // Llenar participantes
+            const editParticipantsContainer = document.getElementById('editParticipantsContainer');
+            editParticipantsContainer.innerHTML = '';
+            trip.participants.forEach(participant => {
+                const div = document.createElement('div');
+                div.className = 'participant-input';
+                div.innerHTML = `
+                    <input type="text" placeholder="Nombre del participante" class="participant-input-field" value="${participant.name}">
+                    <button class="btn-remove" onclick="removeEditParticipantInput(this)">✕</button>
+                `;
+                editParticipantsContainer.appendChild(div);
+            });
+
+            // Mostrar modal
+            document.getElementById('editTripModal').classList.add('active');
+        }
+
+        // CERRAR MODAL DE EDITAR VIAJE
+        function closeEditTripModal() {
+            document.getElementById('editTripModal').classList.remove('active');
+            editingTripId = null;
+        }
+
+        // AGREGAR PARTICIPANTE EN EDICIÓN
+        function addEditParticipantInput() {
+            const container = document.getElementById('editParticipantsContainer');
+            const div = document.createElement('div');
+            div.className = 'participant-input';
+            div.innerHTML = `
+                <input type="text" placeholder="Nombre del participante" class="participant-input-field">
+                <button class="btn-remove" onclick="removeEditParticipantInput(this)">✕</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // REMOVER PARTICIPANTE EN EDICIÓN
+        function removeEditParticipantInput(btn) {
+            btn.parentElement.remove();
+        }
+
+        // GUARDAR CAMBIOS DEL VIAJE
+        function saveEditedTrip() {
+            if (editingTripId === null) return;
+
+            const tripName = document.getElementById('editTripName').value;
+            const tripDescription = document.getElementById('editTripDescription').value;
+            const participantInputs = document.querySelectorAll('#editParticipantsContainer .participant-input-field');
+            const participants = [];
+
+            participantInputs.forEach(input => {
+                if (input.value.trim()) {
+                    participants.push({
+                        id: String(Date.now() + Math.random()),
+                        name: input.value.trim()
+                    });
+                }
+            });
+
+            if (!tripName || participants.length === 0) {
+                alert('Por favor ingresa un nombre y al menos un participante');
+                return;
+            }
+
+            // Actualizar el viaje en Supabase
+            const tripIndex = trips.findIndex(t => t.id === editingTripId);
+            if (tripIndex !== -1) {
+                const trip = trips[tripIndex];
+                trip.name = tripName;
+                trip.description = tripDescription;
+                trip.participants = participants;
+
+                updateTrip(trip).then(success => {
+                    if (success) {
+                        renderTrips();
+                        closeEditTripModal();
+                    } else {
+                        alert('Error al actualizar el viaje');
+                    }
+                });
+            }
+        }
+
+        // RENDERIZAR VIAJES
+        function renderTrips() {
+            const list = document.getElementById('tripsList');
+            
+            if (trips.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✈️</div>
+                        <div class="empty-state-text">No tienes viajes registrados</div>
+                        <p style="color: #ccc; font-size: 14px;">Crea tu primer viaje para comenzar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = '';
+            trips.forEach(trip => {
+                const totalExpense = trip.expenses.reduce((sum, exp) => sum + exp.total, 0);
+                const card = document.createElement('div');
+                card.className = 'trip-card';
+                card.innerHTML = `
+                    <div class="trip-header">
+                        <div class="trip-title-container">
+                            <div class="trip-title">${trip.name}</div>
+                            <button class="btn-edit-trip" onclick="openEditTripModal('${trip.id}')" title="Editar viaje">✏️</button>
+                            <button class="btn-edit-trip" onclick="compartirTrip('${trip.id}')" id="shareBtn-${trip.id}" title="Compartir viaje">📤</button>
+                        </div>
+                    </div>
+                    <div class="trip-stats">
+                        <div class="stat">
+                            <span class="stat-label">Participantes:</span>
+                            <span class="stat-value">${trip.participants.length}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Gastos:</span>
+                            <span class="stat-value">${trip.expenses.length}</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">$${_fmtNum(totalExpense)}</span>
+                        </div>
+                    </div>
+                    ${trip.description ? `<p style="color: #666; margin-bottom: 15px;">${trip.description.replace(/"/g, '&quot;')}</p>` : ''}
+                    <div class="trip-actions">
+                        <button class="btn-view" onclick="viewTrip('${trip.id}')">Ver Detalles</button>
+                        <button class="btn-delete" onclick="deleteTripUI('${trip.id}')">Eliminar</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // VER DETALLES DEL VIAJE
+        function viewTrip(tripId) {
+            // Guardar el viaje seleccionado en localStorage
+            const trip = trips.find(t => t.id === tripId);
+            localStorage.setItem('currentTrip', JSON.stringify(trip));
+            window.location.href = 'viaje-detalle.html';
+        }
+
+        // ELIMINAR VIAJE
+        function deleteTripUI(tripId) {
+            if (confirm('¿Estás seguro de que deseas eliminar este viaje?')) {
+                deleteTrip(tripId).then(success => {
+                    if (success) {
+                        trips = trips.filter(t => t.id !== tripId);
+                        renderTrips();
+                    } else {
+                        alert('Error al eliminar el viaje');
+                    }
+                });
+            }
+        }
+
+        // VOLVER AL DASHBOARD
+        function goBack() {
+            window.location.href = 'Final.html';
+        }
+
+        // LOGOUT
+        async function handleLogout() {
+            await mySupabase.auth.signOut();
+            goBack();
+        }
+
+        // CARGAR VIAJES AL INICIAR
+        loadTrips().then(() => {
+            renderTrips();
+            // Sincronizar cambios desde viaje-detalle.html si existen
+            const currentTrip = localStorage.getItem('currentTrip');
+            if (currentTrip) {
+                const updatedTrip = JSON.parse(currentTrip);
+                const index = trips.findIndex(t => t.id === updatedTrip.id);
+                if (index !== -1) {
+                    trips[index] = updatedTrip;
+                    updateTrip(updatedTrip);
+                }
+                localStorage.removeItem('currentTrip');
+            }
+        });
+
+        /* ======= COMPARTIR VIAJE ======= */
+        function _fmtNum(num) {
+            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+        function _addMonths(date, months) {
+            const d = new Date(date); d.setMonth(d.getMonth() + months);
+            return d.toISOString().split('T')[0];
+        }
+        function _monthName(date) {
+            return new Date(date).toLocaleDateString('es-ES', { month: 'short', year: '2-digit' });
+        }
+
+        function _buildMatrix(trip) {
+            const names = trip.participants.map(p => p.name);
+            const n = names.length;
+            const m = Array.from({ length: n }, () => Array(n).fill(0));
+            trip.expenses.forEach(exp => {
+                const inst = exp.installments || 1;
+                const paid = exp.paidByName || '';
+                const pppi = (exp.total / inst) / (exp.participants.length || 1);
+                for (let k = 0; k < inst; k++) {
+                    exp.participants.forEach(pName => {
+                        if (pName === paid) return;
+                        const payment = exp.installmentPayments?.[k]?.find(pm => pm.participantId === pName);
+                        let amt = pppi;
+                        if (exp.customCuotaAmounts?.[pName]?.[k] !== undefined) amt = exp.customCuotaAmounts[pName][k];
+                        if (!payment || !payment.paid) {
+                            const di = names.indexOf(pName), ci = names.indexOf(paid);
+                            if (di >= 0 && ci >= 0) m[di][ci] += amt;
+                        }
+                    });
+                }
+            });
+            for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+                const ij = m[i][j], ji = m[j][i];
+                if (ij >= ji) { m[i][j] = ij - ji; m[j][i] = 0; }
+                else           { m[j][i] = ji - ij; m[i][j] = 0; }
+            }
+            return { participants: names, matrix: m };
+        }
+
+        function _buildContent(trip) {
+            const { participants, matrix } = _buildMatrix(trip);
+            const n = participants.length;
+            const navy = '#001a4d', blue = '#0066cc', lP = '#f0e6ff', lB = '#e6f0ff', bd = '#d0d8f0';
+            const rain = ['#ff0000','#ff7f00','#ffdd00','#00aa00','#0066cc','#7f00ff'];
+            let h = `<div style="font-family:'Poppins',sans-serif;background:#f8f9ff;padding:20px 24px;color:${navy};width:760px;box-sizing:border-box;">`;
+
+            // ENCABEZADO
+            const totalExp = trip.expenses.reduce((s, e) => s + e.total, 0);
+            h += `<div style="background:white;border-radius:8px;padding:14px 16px;margin-bottom:12px;border-left:4px solid #ffaa00;">`;
+            h += `<div style="font-size:17px;font-weight:700;margin-bottom:10px;">✈️ ${trip.name}</div>`;
+            h += `<div style="display:flex;gap:8px;margin-bottom:10px;">`;
+            h += `<div style="background:${lP};padding:6px 12px;border-radius:5px;"><div style="font-size:9px;color:#666;font-weight:600;text-transform:uppercase;">Participantes</div><div style="font-weight:700;color:${blue};font-size:13px;">${trip.participants.length}</div></div>`;
+            h += `<div style="background:${lP};padding:6px 12px;border-radius:5px;"><div style="font-size:9px;color:#666;font-weight:600;text-transform:uppercase;">Gastos</div><div style="font-weight:700;color:${blue};font-size:13px;">${trip.expenses.length}</div></div>`;
+            h += `</div>`;
+            h += `<div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;margin-bottom:6px;">Items</div>`;
+            trip.expenses.forEach((exp, i) => {
+                const c = rain[i % rain.length];
+                h += `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-radius:4px;margin-bottom:3px;background:${lP};"><span style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c};"></span>${exp.name}</span><span style="font-weight:700;color:${blue};font-size:12px;">$${_fmtNum(exp.total)}</span></div>`;
+            });
+            h += `</div>`;
+
+            // MATRIZ
+            h += `<div style="background:white;border-radius:8px;padding:14px 16px;margin-bottom:12px;">`;
+            h += `<div style="font-size:13px;font-weight:700;margin-bottom:10px;">📋 Matriz de Deudas</div>`;
+            h += `<table style="border-collapse:collapse;font-size:11px;"><thead><tr>`;
+            h += `<th rowspan="2" colspan="2" style="background:white;border:none;"></th>`;
+            h += `<th colspan="${n}" style="background:${lB};color:${navy};padding:5px 8px;border:1px solid ${bd};text-align:center;font-weight:600;">Recibe</th>`;
+            h += `</tr><tr>`;
+            participants.forEach(name => { h += `<th style="background:${lP};color:${navy};padding:5px 8px;border:1px solid ${bd};text-align:center;white-space:nowrap;">${name}</th>`; });
+            h += `</tr></thead><tbody>`;
+            participants.forEach((row, i) => {
+                h += `<tr>`;
+                if (i === 0) h += `<td rowspan="${n}" style="text-align:center;font-weight:700;font-size:11px;background:${lP};color:${navy};padding:5px 4px;border:1px solid ${bd};vertical-align:middle;">P<br>a<br>g<br>a</td>`;
+                h += `<td style="font-weight:600;background:${lP};color:${navy};padding:5px 8px;border:1px solid ${bd};white-space:nowrap;">${row}</td>`;
+                participants.forEach((_, j) => {
+                    if (i === j) { h += `<td style="background:#f5f5f5;color:#bbb;padding:5px 8px;border:1px solid ${bd};text-align:center;">—</td>`; }
+                    else {
+                        const amt = matrix[i][j];
+                        h += amt > 0 ? `<td style="color:#cc4400;font-weight:600;padding:5px 8px;border:1px solid ${bd};text-align:center;">$${_fmtNum(amt)}</td>`
+                                     : `<td style="color:#bbb;padding:5px 8px;border:1px solid ${bd};text-align:center;">$0</td>`;
+                    }
+                });
+                h += `</tr>`;
+            });
+            h += `</tbody></table></div>`;
+
+            // DETALLE
+            h += `<div style="background:white;border-radius:8px;padding:14px 16px;">`;
+            h += `<div style="font-size:13px;font-weight:700;margin-bottom:10px;">💰 Detalle de Gastos</div>`;
+            trip.expenses.forEach((exp, idx) => {
+                const inst = exp.installments || 1;
+                const pppi = (exp.total / inst) / (exp.participants.length || 1);
+                const col  = rain[idx % rain.length];
+                h += `<div style="margin-bottom:14px;padding-left:10px;border-left:3px solid ${col};">`;
+                h += `<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="font-weight:700;font-size:12px;">${exp.name}</span><span style="font-weight:700;color:${blue};font-size:12px;">$${_fmtNum(exp.total)}</span></div>`;
+                h += `<div style="font-size:10px;color:#666;margin-bottom:6px;">Pagado por: <strong>${exp.paidByName}</strong> &nbsp;·&nbsp; ${inst > 1 ? inst + ' cuotas' : 'Pago único'} &nbsp;·&nbsp; Participantes: ${exp.participants.join(', ')}</div>`;
+                h += `<table style="border-collapse:collapse;font-size:10px;width:100%;"><thead><tr>`;
+                h += `<th style="background:${lB};color:${navy};padding:4px 7px;border:1px solid ${bd};text-align:left;white-space:nowrap;">Participante</th>`;
+                h += `<th style="background:${lB};color:${navy};padding:4px 7px;border:1px solid ${bd};text-align:center;">Total</th>`;
+                h += `<th style="background:${lB};color:${navy};padding:4px 7px;border:1px solid ${bd};text-align:center;">Pendiente</th>`;
+                for (let i = 0; i < inst; i++) h += `<th style="background:${lB};color:${navy};padding:4px 7px;border:1px solid ${bd};text-align:center;white-space:nowrap;">${_monthName(_addMonths(exp.date, i))}</th>`;
+                h += `</tr></thead><tbody>`;
+                exp.participants.forEach((pName, pi) => {
+                    const bg = pi % 2 === 0 ? 'white' : '#fafafe';
+                    const cuotas = [];
+                    for (let i = 0; i < inst; i++) {
+                        let a = pppi;
+                        if (exp.customCuotaAmounts?.[pName]?.[i] !== undefined) a = exp.customCuotaAmounts[pName][i];
+                        cuotas.push(a);
+                    }
+                    const totalP = cuotas.reduce((s, a) => s + a, 0);
+                    let paidAmt = 0;
+                    for (let i = 0; i < inst; i++) { if (exp.installmentPayments?.[i]?.find(pm => pm.participantId === pName && pm.paid)) paidAmt += cuotas[i]; }
+                    const pend = totalP - paidAmt;
+                    h += `<tr>`;
+                    h += `<td style="background:${bg};padding:4px 7px;border:1px solid ${bd};font-weight:600;white-space:nowrap;">${pName}</td>`;
+                    h += `<td style="background:${bg};padding:4px 7px;border:1px solid ${bd};text-align:center;">$${_fmtNum(totalP)}</td>`;
+                    h += `<td style="background:${bg};padding:4px 7px;border:1px solid ${bd};text-align:center;color:${pend>0?'#cc4400':'#00aa00'};font-weight:600;">$${_fmtNum(pend)}</td>`;
+                    for (let i = 0; i < inst; i++) {
+                        const pd = exp.installmentPayments?.[i]?.find(pm => pm.participantId === pName && pm.paid);
+                        h += `<td style="background:${bg};padding:4px 7px;border:1px solid ${bd};text-align:center;"><span style="color:${pd?'#00aa00':'#cc4400'};font-weight:700;">${pd?'✓':'✗'}</span> <span style="color:#555;">$${_fmtNum(cuotas[i])}</span></td>`;
+                    }
+                    h += `</tr>`;
+                });
+                h += `</tbody></table></div>`;
+            });
+            h += `</div></div>`;
+            return h;
+        }
+
+        async function compartirTrip(tripId) {
+            const trip = trips.find(t => t.id === tripId);
+            if (!trip) return;
+            const btn = document.getElementById('shareBtn-' + tripId);
+            if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+
+            try {
+                const LETTER_W = 1632, LETTER_H = 2112;
+                const preview = document.getElementById('sharePreview');
+                preview.innerHTML = _buildContent(trip);
+                preview.style.width = '760px';
+
+                const rawCanvas = await html2canvas(preview, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false, width: 760 });
+                preview.style.width = '';
+
+                const lc = document.createElement('canvas');
+                lc.width = LETTER_W; lc.height = LETTER_H;
+                const ctx = lc.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, LETTER_W, LETTER_H);
+                const ratio = Math.min(LETTER_W / rawCanvas.width, LETTER_H / rawCanvas.height);
+                const dw = Math.round(rawCanvas.width * ratio), dh = Math.round(rawCanvas.height * ratio);
+                ctx.drawImage(rawCanvas, Math.round((LETTER_W - dw) / 2), 0, dw, dh);
+
+                lc.toBlob(async (blob) => {
+                    const safeName = (trip.name || 'viaje').replace(/\s+/g, '-');
+                    const file = new File([blob], safeName + '.png', { type: 'image/png' });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try { await navigator.share({ files: [file], title: trip.name }); return; }
+                        catch (e) { if (e.name === 'AbortError') return; }
+                    }
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = safeName + '.png';
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 5000);
+                }, 'image/png');
+            } catch(e) {
+                console.error('Error al compartir:', e);
+                alert('Ocurrió un error al generar la imagen.');
+            } finally {
+                if (btn) { btn.textContent = '📤'; btn.disabled = false; }
+            }
+        }
+        /* ================================ */
+    </script>
+
+    <div id="sharePreview" style="position:absolute;left:-9999px;top:0;"></div>
+
+</body>
+</html>

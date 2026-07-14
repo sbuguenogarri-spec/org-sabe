@@ -1,0 +1,2088 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deudas TC - org.BASE</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%);
+            min-height: 100vh;
+            color: #001a4d;
+        }
+
+        /* BARRA DE NAVEGACIÓN */
+        .navbar {
+            background: linear-gradient(135deg, #001a4d 0%, #003d99 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2);
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .logo {
+            font-size: 38px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: stretch;
+            align-self: stretch;
+            margin: -20px 0 -20px -40px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            background: #e6f0ff;
+            color: #0066cc;
+            border: 2px solid #99ccff;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+
+        .back-btn:hover {
+            background: #0066cc;
+            color: white;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .welcome-text {
+            color: white;
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+        }
+
+        .profile-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #001a4d;
+        }
+
+        /* TABLA DE RESUMEN GLOBAL */
+        .summary-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 8px rgba(0, 26, 77, 0.1);
+        }
+
+        .summary-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #001a4d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .month-navigation {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .month-nav-btn {
+            padding: 8px 15px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .month-nav-btn:hover {
+            background: #004499;
+        }
+
+        .month-display {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            min-width: 120px;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+
+        .summary-table th {
+            background: #f0e6ff;
+            color: #001a4d;
+            padding: 12px;
+            text-align: center;
+            font-weight: 700;
+            border-bottom: 2px solid #99ccff;
+            white-space: nowrap;
+        }
+
+        .summary-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .summary-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .category-color-dot {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .add-category-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .add-category-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #99ccff;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .add-category-input:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 8px rgba(0, 102, 204, 0.2);
+        }
+
+        .btn-add-category {
+            padding: 10px 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-category:hover {
+            background: #004499;
+        }
+
+        .color-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+
+        .color-circle:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-circle.selected {
+            border-color: #001a4d;
+            box-shadow: 0 0 0 3px rgba(0, 26, 77, 0.3);
+        }
+
+        /* SECCIÓN DE DETALLES POR CATEGORÍA */
+        .category-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 26, 77, 0.1);
+            border-left: 5px solid #0066cc;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .category-name {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .category-name-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-edit-category {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-edit-category:hover {
+            background: rgba(0, 102, 204, 0.1);
+        }
+
+        .category-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            color: #001a4d;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action {
+            padding: 8px 15px;
+            background: #e6f0ff;
+            color: #0066cc;
+            border: 1px solid #99ccff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-action:hover {
+            background: #99ccff;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ffe6e6;
+            color: #cc0000;
+            border-color: #ff9999;
+        }
+
+        .btn-delete:hover {
+            background: #ff9999;
+            color: white;
+        }
+
+        /* TABLA DE DEUDAS */
+        .debts-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .debts-table th {
+            background: #f0e6ff;
+            color: #001a4d;
+            padding: 12px;
+            text-align: left;
+            font-weight: 700;
+            border-bottom: 2px solid #99ccff;
+        }
+
+        .debts-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .debts-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .debt-detail {
+            font-weight: 600;
+            color: #001a4d;
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            color: #0066cc;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 0;
+        }
+
+        .expand-btn:hover {
+            color: #004499;
+        }
+
+        /* FILA DE CUOTAS EXPANDIDA */
+        .installments-row {
+            display: none;
+            background: #f9f9f9;
+        }
+
+        .installments-row.expanded {
+            display: table-row;
+        }
+
+        .installments-content {
+            padding: 20px;
+            width: 100%;
+            overflow-x: auto;
+            box-sizing: border-box;
+            max-width: 100%;
+            display: block;
+        }
+        
+        .installments-content > div {
+            width: 100%;
+        }
+
+        .installment-card {
+            background: white;
+            border: 1px solid #99ccff;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+        }
+
+        .installment-month {
+            font-weight: 700;
+            color: #001a4d;
+            margin-bottom: 8px;
+        }
+
+        .installment-amount {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0066cc;
+            margin-bottom: 8px;
+        }
+
+        .installment-amount-input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #99ccff;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .installment-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .installment-checkbox input {
+            cursor: pointer;
+        }
+
+        .installment-paid {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 26, 77, 0.2);
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: #001a4d;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #001a4d;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #99ccff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 8px rgba(0, 102, 204, 0.2);
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #001a4d;
+            box-shadow: 0 0 8px rgba(0, 26, 77, 0.3);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: flex-end;
+        }
+
+        .btn-save {
+            padding: 12px 30px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-save:hover {
+            background: #004499;
+        }
+
+        .btn-cancel {
+            padding: 12px 30px;
+            background: #e6f0ff;
+            color: #0066cc;
+            border: 1px solid #99ccff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #99ccff;
+            color: white;
+        }
+
+        /* MODAL DEUDA - CONTROLES EXTRA */
+        .monto-toggle, .currency-selector {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .monto-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #0066cc;
+            border-radius: 8px;
+            background: white;
+            color: #0066cc;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .monto-btn.active {
+            background: #0066cc;
+            color: white;
+            opacity: 1;
+        }
+        .monto-btn:not(.active) { opacity: 0.35; }
+        .currency-btn {
+            padding: 10px 14px;
+            border: 2px solid #0066cc;
+            border-radius: 8px;
+            background: white;
+            color: #0066cc;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .currency-btn.active {
+            background: #0066cc;
+            color: white;
+            opacity: 1;
+        }
+        .currency-btn:not(.active) { opacity: 0.35; }
+        .amount-row {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .amount-row input {
+            flex: 1;
+            min-width: 0;
+        }
+        .exchange-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .exchange-row span {
+            font-size: 13px;
+            font-weight: 600;
+            color: #001a4d;
+            white-space: nowrap;
+        }
+        .exchange-row input {
+            flex: 1;
+            min-width: 0;
+        }
+        .amount-preview {
+            font-size: 12px;
+            color: #0066cc;
+            background: #e6f0ff;
+            border-radius: 6px;
+            padding: 6px 10px;
+            margin-top: 8px;
+            font-weight: 600;
+            min-height: 28px;
+        }
+
+        .btn-add-debt {
+            padding: 12px 24px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add-debt:hover {
+            background: #004499;
+        }
+
+        .btn-add-income {
+            background: #00aa00;
+        }
+
+        .btn-add-income:hover {
+            background: #008800;
+        }
+
+        /* DRAG & DROP */
+        .category-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 25px;
+        }
+        .category-wrapper .category-section {
+            flex: 1;
+            margin-bottom: 0;
+            min-width: 0;
+        }
+        .drag-handle {
+            color: #ccc;
+            font-size: 22px;
+            cursor: grab;
+            padding: 8px 2px;
+            user-select: none;
+            transition: color 0.2s;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .drag-handle:hover { color: #0066cc; }
+        .drag-handle:active { cursor: grabbing; }
+        .category-wrapper.dragging { opacity: 0.35; }
+        .category-wrapper.drag-over {
+            border-top: 3px solid #0066cc;
+            padding-top: 3px;
+        }
+
+        /* PANEL DETALLE DE DEUDA */
+        .debt-detail-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            padding: 14px 20px;
+            background: #f8f4ff;
+            border-top: 2px solid #e0ccff;
+            align-items: center;
+        }
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .detail-label {
+            font-size: 11px;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .detail-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #001a4d;
+        }
+        .detail-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* VALIDACIÓN */
+        .validation-error {
+            color: #cc0000;
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 8px;
+            background: #ffe6e6;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .validation-error.show {
+            display: block;
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="navbar">
+        <a href="Final.html" class="logo"><span style="background:white;-webkit-text-fill-color:#001a4d;font-weight:700;padding:0 12px 0 40px;display:flex;align-items:center;margin-right:-8px;">org</span><span style="display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0;align-self:center;flex-shrink:0;position:relative;z-index:1;"></span><span style="-webkit-text-fill-color:white;font-weight:700;align-self:center;padding-left:8px;">BASE</span></a>
+        <div class="navbar-right">
+            <span class="welcome-text" id="welcomeText">¡Bienvenido!</span>
+            <button class="logout-btn" onclick="handleLogout()">Cerrar sesión</button>
+            <div class="profile-icon" id="profileIcon">S</div>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="container">
+        <div style="margin-bottom:20px;"><a href="Final.html" class="back-btn">← Volver</a></div>
+        <h1 class="page-title">💳 Deudas TC</h1>
+
+        <!-- RESUMEN GLOBAL -->
+        <div class="summary-section">
+            <div class="summary-title">📊 Resumen Global de Deudas</div>
+            
+            <div class="month-navigation">
+                <button class="month-nav-btn" onclick="previousMonth()">← Anterior</button>
+                <div class="month-display" id="monthDisplay">Julio 2026</div>
+                <button class="month-nav-btn" onclick="nextMonth()">Siguiente →</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="summary-table" id="summaryTable">
+                    <thead>
+                        <tr id="summaryHeader">
+                            <th>Categoría</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="add-category-row">
+                <input type="text" class="add-category-input" id="newCategoryName" placeholder="Nombre de la categoría (Visa, Mastercard, etc.)">
+                
+                <!-- COLOR PICKER INLINE -->
+                <div style="display: flex; gap: 5px;">
+                    <button type="button" class="color-circle" style="background: #ff0000;" onclick="selectInlineColor('#ff0000', this)" title="Rojo"></button>
+                    <button type="button" class="color-circle" style="background: #ff7f00;" onclick="selectInlineColor('#ff7f00', this)" title="Naranja"></button>
+                    <button type="button" class="color-circle" style="background: #ffdd00;" onclick="selectInlineColor('#ffdd00', this)" title="Amarillo"></button>
+                    <button type="button" class="color-circle" style="background: #00aa00;" onclick="selectInlineColor('#00aa00', this)" title="Verde"></button>
+                    <button type="button" class="color-circle" style="background: #0066cc;" onclick="selectInlineColor('#0066cc', this)" title="Azul"></button>
+                    <button type="button" class="color-circle" style="background: #4b0082;" onclick="selectInlineColor('#4b0082', this)" title="Violeta"></button>
+                    <button type="button" class="color-circle" style="background: #ff1493;" onclick="selectInlineColor('#ff1493', this)" title="Rosa"></button>
+                    <button type="button" class="color-circle" style="background: #20b2aa;" onclick="selectInlineColor('#20b2aa', this)" title="Turquesa"></button>
+                </div>
+
+                <button type="button" class="btn-add-category" onclick="saveInlineCategory()">+ Agregar Categoría</button>
+            </div>
+        </div>
+
+        <!-- DEUDAS POR CATEGORÍA -->
+        <div id="categoriesContainer">
+            <!-- Se llena dinámicamente -->
+        </div>
+    </div>
+
+    <!-- MODAL PARA AGREGAR/EDITAR DEUDA -->
+    <div class="modal" id="debtModal">
+        <div class="modal-content">
+            <div class="modal-header" id="debtModalTitle">Nueva Deuda</div>
+
+            <div class="form-group">
+                <label for="debtDetail">Nombre de la deuda:</label>
+                <input type="text" id="debtDetail" placeholder="Ej: Viaje a Miami">
+            </div>
+
+            <div class="form-group">
+                <label>Tipo de Monto:</label>
+                <div class="monto-toggle">
+                    <button id="btnMontoTotal" class="monto-btn active" onclick="selectMontoType('total')">Monto Total</button>
+                    <button id="btnMontoCuota" class="monto-btn" onclick="selectMontoType('cuota')">Monto Cuota</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label id="debtAmountLabel">Monto Total:</label>
+                <div class="amount-row">
+                    <div class="currency-selector">
+                        <button id="btnCLP" class="currency-btn active" onclick="selectCurrency('CLP')">$</button>
+                        <button id="btnUF" class="currency-btn" onclick="selectCurrency('UF')">UF</button>
+                        <button id="btnUSD" class="currency-btn" onclick="selectCurrency('USD')">USD</button>
+                    </div>
+                    <input type="number" id="debtAmount" placeholder="0" min="0" step="0.01" oninput="updateAmountPreview()">
+                </div>
+                <div id="exchangeRateGroup" style="display: none;">
+                    <div class="exchange-row">
+                        <span id="exchangeLabel">1 UF =</span>
+                        <input type="number" id="exchangeRate" placeholder="0" min="0" step="0.01" oninput="updateAmountPreview()">
+                        <span>$</span>
+                    </div>
+                </div>
+                <div class="amount-preview" id="amountPreview"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="debtStartDate">Fecha de Primera Cuota:</label>
+                <input type="date" id="debtStartDate">
+            </div>
+
+            <div class="form-group">
+                <label for="debtInstallments">Número de Cuotas:</label>
+                <input type="number" id="debtInstallments" placeholder="12" min="1" max="360" oninput="updateAmountPreview()">
+            </div>
+
+            <div class="validation-error" id="debtValidationError"></div>
+
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeDebtModal()">Cancelar</button>
+                <button class="btn-save" onclick="saveDebt()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA EDITAR CATEGORÍA -->
+    <div class="modal" id="editCategoryModal">
+        <div class="modal-content">
+            <div class="modal-header">Editar Categoría</div>
+            
+            <div class="form-group">
+                <label for="editCategoryName">Nombre de la Categoría:</label>
+                <input type="text" id="editCategoryName" placeholder="Ej: Banco de Chile">
+            </div>
+
+            <div class="validation-error" id="editCategoryValidationError"></div>
+
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeEditCategoryModal()">Cancelar</button>
+                <button class="btn-save" onclick="saveEditedCategory()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN SUPABASE
+        const sbUrl = 'https://vfqjcyecqecfrevmnivy.supabase.co';
+        const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcWpjeWVjcWVjZnJldm1uaXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTc3NTQsImV4cCI6MjA5ODUzMzc1NH0.dNdouTXa3p1ctM6IdJXm0U_bqopEFAh5NoJCeYNDdzk';
+        const mySupabase = supabase.createClient(sbUrl, sbKey);
+
+        const rainbowColors = ['#ff0000', '#ff7f00', '#ffdd00', '#00aa00', '#0066cc', '#4b0082', '#ff1493', '#20b2aa'];
+        let categories = [];
+        let debts = [];
+        let currentUserEmail = '';
+        let currentMonth = new Date();
+        let editingCategoryId = null;
+        let editingDebtId = null;
+        let editingCategoryId_forDebt = null;
+        let isIncome = false; // true = cuenta por cobrar (monto negativo)
+        let dragSrcId = null;
+        let dragAllowed = false;
+        let selectedMontoType = 'total';
+        let selectedCurrency = 'CLP';
+
+        // FUNCIONES AUXILIARES
+        function formatNumber(num) {
+            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function getMonthYearString(date) {
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            return `${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+
+        function goBack() {
+            window.location.href = 'Final.html';
+        }
+
+        // VERIFICAR SESIÓN
+        mySupabase.auth.getSession().then(({ data }) => {
+            if (data.session) {
+                currentUserEmail = data.session.user.email;
+                const _meta = data.session.user.user_metadata || {};
+                const _fullName = (_meta.full_name || ((_meta.nombre || '') + ' ' + (_meta.apellido || '')).trim()) || currentUserEmail.split('@')[0];
+                document.getElementById('welcomeText').textContent = `¡Bienvenido, ${_fullName}!`;
+                document.getElementById('profileIcon').textContent = _fullName.charAt(0).toUpperCase();
+                loadData();
+            } else {
+                goBack();
+            }
+        });
+
+        // CARGAR DATOS DE SUPABASE
+        async function loadData() {
+            const { data: sessionData } = await mySupabase.auth.getSession();
+            const userId = sessionData?.session?.user?.id;
+            if (!userId) {
+                console.error('Usuario no autenticado');
+                renderAll();
+                return;
+            }
+
+            // Cargar categorías
+            const { data: categoriesData, error: categoriesError } = await mySupabase
+                .from('debt_categories')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: true });
+
+            if (categoriesError) {
+                console.error('Error cargando categorías:', categoriesError);
+            } else {
+                categories = categoriesData || [];
+                applySavedCategoryOrder();
+            }
+
+            // Cargar deudas
+            const { data: debtsData, error: debtsError } = await mySupabase
+                .from('debts')
+                .select(`
+                    *,
+                    installments (*)
+                `)
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (debtsError) {
+                console.error('Error cargando deudas:', debtsError);
+            } else {
+                debts = debtsData || [];
+                // Ordenar cuotas por mes
+                debts.forEach(debt => {
+                    if (debt.installments) {
+                        debt.installments.sort((a, b) => a.month_number - b.month_number);
+                    }
+                });
+            }
+
+            renderAll();
+        }
+
+        function renderAll() {
+            updateMonthDisplay();
+            renderSummaryTable();
+            renderCategories();
+        }
+
+        function updateMonthDisplay() {
+            document.getElementById('monthDisplay').textContent = getMonthYearString(currentMonth);
+        }
+
+        function previousMonth() {
+            currentMonth.setMonth(currentMonth.getMonth() - 1);
+            renderAll();
+        }
+
+        function nextMonth() {
+            currentMonth.setMonth(currentMonth.getMonth() + 1);
+            renderAll();
+        }
+
+        function renderColorPicker() {
+            const picker = document.getElementById('colorPicker');
+            picker.innerHTML = '';
+            rainbowColors.forEach(color => {
+                const btn = document.createElement('button');
+                btn.className = 'color-option';
+                btn.style.backgroundColor = color;
+                btn.onclick = () => selectColor(color, btn);
+                picker.appendChild(btn);
+            });
+        }
+
+        let selectedColor = rainbowColors[3];
+        function selectColor(color, btn) {
+            selectedColor = color;
+            document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        // RENDERIZAR TABLA DE RESUMEN
+        function renderSummaryTable() {
+            const header = document.getElementById('summaryHeader');
+            const body = document.getElementById('summaryBody');
+
+            // Limpiar excepto primera columna
+            header.innerHTML = '<th>Categoría</th>';
+            body.innerHTML = '';
+
+            // Calcular meses a mostrar
+            let maxInstallments = 0;
+            debts.forEach(debt => {
+                if (debt.num_installments > maxInstallments) {
+                    maxInstallments = debt.num_installments;
+                }
+            });
+
+            // Agregar columnas de meses
+            const tempDate = new Date(currentMonth);
+            for (let i = 0; i < maxInstallments; i++) {
+                const th = document.createElement('th');
+                const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                th.textContent = `${months[tempDate.getMonth()]} ${tempDate.getFullYear()}`;
+                header.appendChild(th);
+                tempDate.setMonth(tempDate.getMonth() + 1);
+            }
+
+            // Llenar filas por categoría
+            categories.forEach(category => {
+                const row = document.createElement('tr');
+                const categoryCell = document.createElement('td');
+                categoryCell.innerHTML = `<span class="category-color-dot" style="background: ${category.color};"></span>${category.name}`;
+                row.appendChild(categoryCell);
+
+                // Calcular monto por mes
+                const tempDate = new Date(currentMonth);
+                for (let i = 0; i < maxInstallments; i++) {
+                    const cell = document.createElement('td');
+                    let total = 0;
+
+                    debts.forEach(debt => {
+                        if (debt.category_id === category.id && !debt.is_income) {
+                            const installments = debt.installments || [];
+                            const debtStartDate = new Date(debt.start_date);
+                            
+                            // Calcular mes relativo
+                            const monthsDiff = (tempDate.getFullYear() - debtStartDate.getFullYear()) * 12 + 
+                                             (tempDate.getMonth() - debtStartDate.getMonth());
+                            
+                            if (monthsDiff >= 0 && monthsDiff < debt.num_installments) {
+                                const installment = installments.find(inst => inst.month_number === monthsDiff);
+                                if (installment && installment.paid !== true) {
+                                    total += parseFloat(installment.amount);
+                                }
+                            }
+                        }
+                    });
+
+                    cell.textContent = total > 0 ? `$${formatNumber(total)}` : '-';
+                    cell.style.textAlign = 'right';
+                    row.appendChild(cell);
+                    tempDate.setMonth(tempDate.getMonth() + 1);
+                }
+
+                body.appendChild(row);
+            });
+
+            // Fila total por mes
+            const totalRow = document.createElement('tr');
+            totalRow.style.fontWeight = '700';
+            totalRow.style.borderTop = '2px solid #99ccff';
+            totalRow.style.background = '#e8efff';
+            const totalLabelCell = document.createElement('td');
+            totalLabelCell.textContent = 'Total';
+            totalLabelCell.style.fontWeight = '700';
+            totalRow.appendChild(totalLabelCell);
+
+            const tempDateTotal = new Date(currentMonth);
+            for (let i = 0; i < maxInstallments; i++) {
+                const cell = document.createElement('td');
+                let total = 0;
+                debts.forEach(debt => {
+                    if (debt.is_income) return;
+                    const debtStartDate = new Date(debt.start_date);
+                    const monthsDiff = (tempDateTotal.getFullYear() - debtStartDate.getFullYear()) * 12 +
+                                       (tempDateTotal.getMonth() - debtStartDate.getMonth());
+                    if (monthsDiff >= 0 && monthsDiff < debt.num_installments) {
+                        const inst = (debt.installments || []).find(x => x.month_number === monthsDiff);
+                        if (inst && inst.paid !== true) total += parseFloat(inst.amount);
+                    }
+                });
+                cell.textContent = total > 0 ? `$${formatNumber(total)}` : '-';
+                cell.style.textAlign = 'right';
+                cell.style.color = '#0066cc';
+                totalRow.appendChild(cell);
+                tempDateTotal.setMonth(tempDateTotal.getMonth() + 1);
+            }
+            body.appendChild(totalRow);
+        }
+
+        // RENDERIZAR CATEGORÍAS Y DEUDAS
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+
+            // Guardar estado de categorías (body expandido)
+            const expandedCategories = new Set();
+            document.querySelectorAll('[id^="category-body-"]').forEach(el => {
+                if (el.style.display !== 'none') {
+                    expandedCategories.add(el.id.replace('category-body-', ''));
+                }
+            });
+
+            container.innerHTML = '';
+
+            if (categories.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📂</div>
+                        <div class="empty-state-text">No tienes categorías creadas</div>
+                        <p style="color: #ccc; font-size: 14px;">Crea tu primera categoría para comenzar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            categories.forEach(category => {
+                try {
+                    const categoryDebts = debts.filter(d => d.category_id === category.id);
+                    const regularDebts = categoryDebts.filter(d => !d.is_income);
+                    const totalDebt = regularDebts.reduce((sum, d) => sum + d.total_amount, 0);
+                    
+                    // Deuda mes actual (según currentMonth seleccionado)
+                    let currentMonthDebt = 0;
+                    regularDebts.forEach(d => {
+                        const debtStartDate = new Date(d.start_date);
+                        const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
+                                           (currentMonth.getMonth() - debtStartDate.getMonth());
+                        if (monthsDiff >= 0 && monthsDiff < d.num_installments) {
+                            const inst = (d.installments || []).find(i => i.month_number === monthsDiff);
+                            if (inst && inst.paid !== true) currentMonthDebt += parseFloat(inst.amount);
+                        }
+                    });
+
+                    // Deuda próximo mes
+                    let nextMonthDebt = 0;
+                    regularDebts.forEach(d => {
+                        const debtStartDate = new Date(d.start_date);
+                        const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
+                                           (currentMonth.getMonth() - debtStartDate.getMonth()) + 1;
+                        if (monthsDiff >= 0 && monthsDiff < d.num_installments) {
+                            const inst = (d.installments || []).find(i => i.month_number === monthsDiff);
+                            if (inst && inst.paid !== true) nextMonthDebt += parseFloat(inst.amount);
+                        }
+                    });
+
+                    const section = document.createElement('div');
+                    section.className = 'category-section';
+                    section.style.borderLeftColor = category.color;
+
+                    section.innerHTML = `
+                        <div class="category-header" style="margin-bottom: 0; cursor: pointer;" onclick="toggleCategory('${category.id}')">
+                            <div class="category-name">
+                                <button id="category-toggle-btn-${category.id}" style="background: none; border: none; cursor: pointer; font-size: 16px; color: #0066cc; padding: 0 6px 0 0;">▶</button>
+                                <div class="category-name-container">
+                                    <span class="category-color-dot" style="background: ${category.color};"></span>
+                                    ${category.name}
+                                    <button class="btn-edit-category" onclick="event.stopPropagation(); openEditCategoryModal('${category.id}', '${category.name.replace(/'/g, "\\'")}', '${category.color}')" title="Editar categoría">✏️</button>
+                                </div>
+                            </div>
+                            <div class="category-stats">
+                                <div class="stat">
+                                    <span class="stat-label">Deuda Total</span>
+                                    <span class="stat-value">$${formatNumber(totalDebt)}</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Deuda Mes Actual</span>
+                                    <span class="stat-value" style="color: #ff6b6b;">$${formatNumber(currentMonthDebt)}</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-label">Deuda Próximo Mes</span>
+                                    <span class="stat-value">$${formatNumber(nextMonthDebt)}</span>
+                                </div>
+                            </div>
+                            <div class="category-actions">
+                                <button class="btn-action btn-delete" onclick="event.stopPropagation(); deleteCategory('${category.id}')">Eliminar</button>
+                            </div>
+                        </div>
+
+                        <div id="category-body-${category.id}" style="display: none; margin-top: 20px;">
+                            <div style="overflow-x: auto; border-radius: 8px; margin-bottom: 15px;">
+                                <table class="summary-table" id="projection-${category.id}" style="min-width: 100%;">
+                                    <thead>
+                                        <tr id="projection-header-${category.id}">
+                                            <th style="width: 40px;"></th>
+                                            <th style="text-align: left; min-width: 160px;">Nombre</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="projection-body-${category.id}">
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                                <button class="btn-add-debt" onclick="openAddDebtModal('${category.id}')">+ Agregar Deuda</button>
+                                <button class="btn-add-debt btn-add-income" onclick="openAddIncomeModal('${category.id}')">💰 Cuentas por Cobrar</button>
+                            </div>
+                        </div>
+                    `;
+
+                    // Crear wrapper con handle externo
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'category-wrapper';
+                    const dragHandle = document.createElement('div');
+                    dragHandle.className = 'drag-handle';
+                    dragHandle.title = 'Arrastrar para reordenar';
+                    dragHandle.textContent = '⢿';
+                    wrapper.appendChild(dragHandle);
+                    wrapper.appendChild(section);
+                    container.appendChild(wrapper);
+
+                    // Configurar drag & drop
+                    wrapper.dataset.categoryId = category.id;
+                    wrapper.draggable = true;
+                    dragHandle.addEventListener('mousedown', () => { dragAllowed = true; });
+                    document.addEventListener('mouseup', () => { dragAllowed = false; }, { once: true });
+                    wrapper.addEventListener('dragstart', (e) => {
+                        if (!dragAllowed) { e.preventDefault(); return; }
+                        dragSrcId = category.id;
+                        setTimeout(() => wrapper.classList.add('dragging'), 0);
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                    wrapper.addEventListener('dragend', () => {
+                        dragAllowed = false;
+                        wrapper.classList.remove('dragging');
+                        document.querySelectorAll('.category-wrapper').forEach(w => w.classList.remove('drag-over'));
+                    });
+                    wrapper.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        document.querySelectorAll('.category-wrapper').forEach(w => w.classList.remove('drag-over'));
+                        wrapper.classList.add('drag-over');
+                    });
+                    wrapper.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const targetId = category.id;
+                        if (dragSrcId === targetId) return;
+                        const srcIndex = categories.findIndex(c => c.id === dragSrcId);
+                        const tgtIndex = categories.findIndex(c => c.id === targetId);
+                        if (srcIndex === -1 || tgtIndex === -1) return;
+                        const [removed] = categories.splice(srcIndex, 1);
+                        categories.splice(tgtIndex, 0, removed);
+                        saveCategoryOrder();
+                        renderAll();
+                    });
+
+                    // Renderizar tabla unificada
+                    renderCategoryProjection(category, categoryDebts);
+                } catch (error) {
+                    console.error('Error renderizando categoría', category.name, error);
+                }
+            });
+
+            // Restaurar estado expandido de categorías (por defecto parten colapsadas)
+            expandedCategories.forEach(categoryId => {
+                const body = document.getElementById(`category-body-${categoryId}`);
+                if (body) {
+                    body.style.display = 'block';
+                    const btn = document.getElementById(`category-toggle-btn-${categoryId}`);
+                    if (btn) btn.textContent = '▼';
+                }
+            });
+        }
+
+        function saveCategoryOrder() {
+            const order = categories.map(c => c.id);
+            localStorage.setItem(`category_order_${currentUserEmail}`, JSON.stringify(order));
+        }
+
+        function applySavedCategoryOrder() {
+            const saved = localStorage.getItem(`category_order_${currentUserEmail}`);
+            if (!saved) return;
+            try {
+                const order = JSON.parse(saved);
+                categories.sort((a, b) => {
+                    const ai = order.indexOf(a.id);
+                    const bi = order.indexOf(b.id);
+                    if (ai === -1) return 1;
+                    if (bi === -1) return -1;
+                    return ai - bi;
+                });
+            } catch (e) { /* ignorar orden corrupto */ }
+        }
+
+        function toggleCategory(categoryId) {
+            const body = document.getElementById(`category-body-${categoryId}`);
+            const btn = document.getElementById(`category-toggle-btn-${categoryId}`);
+            if (body.style.display === 'none') {
+                body.style.display = 'block';
+                btn.textContent = '▼';
+            } else {
+                body.style.display = 'none';
+                btn.textContent = '▶';
+            }
+        }
+
+        function toggleProjection(categoryId) {
+            // obsoleto - conservado por compatibilidad
+        }
+
+        function toggleDebtDetail(debtId, btn) {
+            const row = document.getElementById(`debt-detail-${debtId}`);
+            if (!row) return;
+            if (row.style.display === 'none' || row.style.display === '') {
+                row.style.display = 'table-row';
+                btn.textContent = '▼';
+            } else {
+                row.style.display = 'none';
+                btn.textContent = '▶';
+            }
+        }
+
+        function renderCategoryProjection(category, categoryDebts) {
+            const header = document.getElementById(`projection-header-${category.id}`);
+            const body = document.getElementById(`projection-body-${category.id}`);
+            if (!header || !body) return;
+
+            // Calcular columnas reales necesarias desde currentMonth
+            // (descontando meses ya transcurridos desde el inicio de cada deuda)
+            let maxInstallments = 0;
+            categoryDebts.forEach(debt => {
+                const startDate = new Date(debt.start_date);
+                const monthsToStart = (startDate.getFullYear() - currentMonth.getFullYear()) * 12 +
+                                      (startDate.getMonth() - currentMonth.getMonth());
+                const colsNeeded = Math.max(0, monthsToStart + debt.num_installments);
+                if (colsNeeded > maxInstallments) maxInstallments = colsNeeded;
+            });
+
+            // Reconstruir encabezado
+            header.innerHTML = '<th style="width:40px;"></th><th style="text-align:left;min-width:160px;padding-left:10px;">Nombre</th>';
+            const tempDate = new Date(currentMonth);
+            const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+            for (let i = 0; i < maxInstallments; i++) {
+                const th = document.createElement('th');
+                th.textContent = `${monthNames[tempDate.getMonth()]} ${tempDate.getFullYear()}`;
+                header.appendChild(th);
+                tempDate.setMonth(tempDate.getMonth() + 1);
+            }
+
+            body.innerHTML = '';
+
+            // Separar deudas normales e ingresos por cobrar
+            const _regularDebts = categoryDebts.filter(d => !d.is_income);
+            const _incomeDebts  = categoryDebts.filter(d => d.is_income);
+
+            _regularDebts.forEach(debt => {
+                const debtStartDate = new Date(debt.start_date);
+                const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
+                                   (currentMonth.getMonth() - debtStartDate.getMonth());
+                const unpaidCount = (debt.installments || []).filter(inst => inst.paid !== true && inst.month_number >= monthsDiff).length;
+                const montoCuota = debt.total_amount / debt.num_installments;
+
+                // --- Fila principal ---
+                const row = document.createElement('tr');
+
+                const toggleCell = document.createElement('td');
+                toggleCell.style.textAlign = 'center';
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'expand-btn';
+                toggleBtn.textContent = '▶';
+                toggleBtn.onclick = (e) => { e.stopPropagation(); toggleDebtDetail(debt.id, toggleBtn); };
+                toggleCell.appendChild(toggleBtn);
+                row.appendChild(toggleCell);
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = (debt.total_amount < 0 ? '💰 ' : '') + debt.detail;
+                nameCell.style.fontWeight = '700';
+                nameCell.style.textAlign = 'left';
+                nameCell.style.paddingLeft = '10px';
+                if (debt.total_amount < 0) nameCell.style.color = '#00aa00';
+                row.appendChild(nameCell);
+
+                const tempDate2 = new Date(currentMonth);
+                for (let i = 0; i < maxInstallments; i++) {
+                    const cell = document.createElement('td');
+                    const diff = (tempDate2.getFullYear() - debtStartDate.getFullYear()) * 12 +
+                                 (tempDate2.getMonth() - debtStartDate.getMonth());
+                    let amount = 0;
+                    if (diff >= 0 && diff < debt.num_installments) {
+                        const inst = (debt.installments || []).find(x => x.month_number === diff);
+                        if (inst && inst.paid !== true) amount = parseFloat(inst.amount);
+                    }
+                    if (amount > 0) {
+                        cell.textContent = `$${formatNumber(amount)}`;
+                    } else if (amount < 0) {
+                        cell.textContent = `+$${formatNumber(Math.abs(amount))}`;
+                        cell.style.color = '#00aa00';
+                    } else {
+                        cell.textContent = '-';
+                    }
+                    cell.style.textAlign = 'center';
+                    cell.style.fontWeight = '600';
+                    row.appendChild(cell);
+                    tempDate2.setMonth(tempDate2.getMonth() + 1);
+                }
+                body.appendChild(row);
+
+                // --- Fila de detalle (oculta) ---
+                const detailRow = document.createElement('tr');
+                detailRow.id = `debt-detail-${debt.id}`;
+                detailRow.style.display = 'none';
+
+                // Celda vacía para alinear con columna "Nombre" (debajo del botón ▶)
+                const detailSpacer = document.createElement('td');
+                detailSpacer.style.padding = '0';
+                detailRow.appendChild(detailSpacer);
+
+                const detailCell = document.createElement('td');
+                detailCell.colSpan = 1 + maxInstallments;
+                detailCell.style.padding = '0';
+                detailCell.innerHTML = `
+                    <div class="debt-detail-panel">
+                        <div class="detail-item">
+                            <span class="detail-label">Inicio</span>
+                            <span class="detail-value">${new Date(debt.start_date).toLocaleDateString('es-CL')}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Total Cuotas</span>
+                            <span class="detail-value">${debt.num_installments}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Monto Total</span>
+                            <span class="detail-value">$${formatNumber(debt.total_amount)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Monto Cuota</span>
+                            <span class="detail-value">$${formatNumber(montoCuota)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Restantes</span>
+                            <span class="detail-value">${unpaidCount}</span>
+                        </div>
+                        <div class="detail-actions">
+                            <button class="btn-action" onclick="editDebt('${debt.category_id}', '${debt.id}')">Editar</button>
+                            <button class="btn-action btn-delete" onclick="deleteDebt('${debt.id}', '${debt.category_id}')">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+                detailRow.appendChild(detailCell);
+                body.appendChild(detailRow);
+            });
+
+            // Sección de ingresos por cobrar
+            if (_incomeDebts.length > 0) {
+                const sepRow = document.createElement('tr');
+                const sepCell = document.createElement('td');
+                sepCell.colSpan = 2 + maxInstallments;
+                sepCell.style.cssText = 'padding:6px 12px;background:#f0fff4;color:#00aa00;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-top:2px solid #b2dfdb;border-bottom:1px solid #b2dfdb;';
+                sepCell.textContent = '💚 Ingresos por Cobrar';
+                sepRow.appendChild(sepCell);
+                body.appendChild(sepRow);
+
+                _incomeDebts.forEach(debt => {
+                    const debtStartDate = new Date(debt.start_date);
+                    const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
+                                       (currentMonth.getMonth() - debtStartDate.getMonth());
+                    const unpaidCount = (debt.installments || []).filter(inst => inst.paid !== true && inst.month_number >= monthsDiff).length;
+                    const montoCuota = debt.total_amount / debt.num_installments;
+
+                    const row = document.createElement('tr');
+                    row.style.background = '#f6fff8';
+
+                    const toggleCell = document.createElement('td');
+                    toggleCell.style.textAlign = 'center';
+                    const toggleBtn = document.createElement('button');
+                    toggleBtn.className = 'expand-btn';
+                    toggleBtn.textContent = '▶';
+                    toggleBtn.style.color = '#00aa00';
+                    toggleBtn.onclick = (e) => { e.stopPropagation(); toggleDebtDetail(debt.id, toggleBtn); };
+                    toggleCell.appendChild(toggleBtn);
+                    row.appendChild(toggleCell);
+
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = '💚 ' + debt.detail;
+                    nameCell.style.fontWeight = '700';
+                    nameCell.style.textAlign = 'left';
+                    nameCell.style.paddingLeft = '10px';
+                    nameCell.style.color = '#00aa00';
+                    row.appendChild(nameCell);
+
+                    const tempDate3 = new Date(currentMonth);
+                    for (let i = 0; i < maxInstallments; i++) {
+                        const cell = document.createElement('td');
+                        const diff = (tempDate3.getFullYear() - debtStartDate.getFullYear()) * 12 +
+                                     (tempDate3.getMonth() - debtStartDate.getMonth());
+                        let amount = 0;
+                        if (diff >= 0 && diff < debt.num_installments) {
+                            const inst = (debt.installments || []).find(x => x.month_number === diff);
+                            if (inst && inst.paid !== true) amount = parseFloat(inst.amount);
+                        }
+                        cell.textContent = amount > 0 ? `+$${formatNumber(amount)}` : '-';
+                        cell.style.textAlign = 'center';
+                        cell.style.fontWeight = '600';
+                        if (amount > 0) cell.style.color = '#00aa00';
+                        row.appendChild(cell);
+                        tempDate3.setMonth(tempDate3.getMonth() + 1);
+                    }
+                    body.appendChild(row);
+
+                    const detailRow2 = document.createElement('tr');
+                    detailRow2.id = `debt-detail-${debt.id}`;
+                    detailRow2.style.display = 'none';
+                    const detailSpacer2 = document.createElement('td');
+                    detailSpacer2.style.padding = '0';
+                    detailRow2.appendChild(detailSpacer2);
+                    const detailCell2 = document.createElement('td');
+                    detailCell2.colSpan = 1 + maxInstallments;
+                    detailCell2.style.padding = '0';
+                    detailCell2.innerHTML = `
+                        <div class="debt-detail-panel" style="background:#f0fff4;border-top-color:#b2dfdb;">
+                            <div class="detail-item">
+                                <span class="detail-label">Inicio</span>
+                                <span class="detail-value">${new Date(debt.start_date).toLocaleDateString('es-CL')}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Total Cuotas</span>
+                                <span class="detail-value">${debt.num_installments}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Monto Total</span>
+                                <span class="detail-value" style="color:#00aa00;">$${formatNumber(debt.total_amount)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Monto Cuota</span>
+                                <span class="detail-value" style="color:#00aa00;">$${formatNumber(montoCuota)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Restantes</span>
+                                <span class="detail-value">${unpaidCount}</span>
+                            </div>
+                            <div class="detail-actions">
+                                <button class="btn-action" onclick="editDebt('${debt.category_id}', '${debt.id}')">Editar</button>
+                                <button class="btn-action btn-delete" onclick="deleteDebt('${debt.id}', '${debt.category_id}')">Eliminar</button>
+                            </div>
+                        </div>
+                    `;
+                    detailRow2.appendChild(detailCell2);
+                    body.appendChild(detailRow2);
+                });
+            }
+        }
+
+        async function updateInstallmentAmount(debtId, installmentIndex, newAmount, totalAmount) {
+            const debt = debts.find(d => d.id === debtId);
+            if (!debt) return;
+
+            const installments = debt.installments || [];
+            const newAmountNum = parseFloat(newAmount);
+            const oldAmount = installments[installmentIndex].amount;
+            const difference = newAmountNum - oldAmount;
+
+            // Actualizar cuota actual
+            installments[installmentIndex].amount = newAmountNum;
+
+            // Validar que la suma no exceda el total
+            const sum = installments.reduce((s, inst) => s + inst.amount, 0);
+            if (sum > totalAmount) {
+                // Ajustar última cuota
+                const lastIndex = installments.length - 1;
+                installments[lastIndex].amount -= (sum - totalAmount);
+            }
+
+            // Guardar cambios en Supabase
+            for (let i = 0; i < installments.length; i++) {
+                await mySupabase
+                    .from('installments')
+                    .update({ amount: installments[i].amount })
+                    .eq('id', installments[i].id);
+            }
+
+            renderInstallments(debt);
+            renderAll();
+        }
+
+        async function toggleInstallmentPaid(debtId, installmentIndex) {
+            const debt = debts.find(d => d.id === debtId);
+            if (!debt) return;
+
+            const installments = debt.installments || [];
+            const inst = installments[installmentIndex];
+
+            await mySupabase
+                .from('installments')
+                .update({ paid: !inst.paid })
+                .eq('id', inst.id);
+
+            inst.paid = !inst.paid;
+            renderAll();
+        }
+
+        // MODALES
+        let selectedInlineColor = '#0066cc';
+
+        function selectInlineColor(color, btn) {
+            console.log('Color seleccionado:', color);
+            selectedInlineColor = color;
+            document.querySelectorAll('.color-circle').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            console.log('Botones con clase selected:', document.querySelectorAll('.color-circle.selected').length);
+        }
+
+        async function saveInlineCategory() {
+            console.log('Guardando categoría...');
+            console.log('Nombre ingresado:', document.getElementById('newCategoryName').value);
+            console.log('Color seleccionado:', selectedInlineColor);
+            
+            const name = document.getElementById('newCategoryName').value.trim();
+            if (!name) {
+                alert('Por favor ingresa un nombre');
+                return;
+            }
+
+            const user = await mySupabase.auth.getUser();
+            if (!user.data.user) {
+                alert('Error: Usuario no autenticado');
+                return;
+            }
+
+            const userId = user.data.user.id;
+            console.log('User ID:', userId);
+            
+            const usedColors = categories.map(c => c.color);
+            let color = selectedInlineColor;
+            
+            // Si el color YA ESTÁ EN USO, buscar uno disponible
+            if (usedColors.includes(color)) {
+                console.log('Color ya está en uso, buscando alternativa...');
+                for (let c of rainbowColors) {
+                    if (!usedColors.includes(c)) {
+                        color = c;
+                        break;
+                    }
+                }
+            }
+
+            console.log('Color final a usar:', color);
+
+            const { data, error } = await mySupabase
+                .from('debt_categories')
+                .insert([{ user_id: userId, name, color }]);
+
+            if (error) {
+                console.error('Error al crear:', error);
+                alert('Error al crear la categoría: ' + error.message);
+                return;
+            }
+
+            console.log('Categoría creada exitosamente:', data);
+            document.getElementById('newCategoryName').value = '';
+            selectedInlineColor = '#0066cc';
+            document.querySelectorAll('.color-circle').forEach(b => b.classList.remove('selected'));
+            await loadData();
+        }
+
+        async function deleteCategory(categoryId) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta categoría? Las deudas asociadas también se eliminarán.')) {
+                await mySupabase
+                    .from('debt_categories')
+                    .delete()
+                    .eq('id', categoryId);
+
+                loadData();
+            }
+        }
+
+        let editingCategoryId_forEdit = null;
+
+        function openEditCategoryModal(categoryId, categoryName, categoryColor) {
+            editingCategoryId_forEdit = categoryId;
+            document.getElementById('editCategoryName').value = categoryName;
+            document.getElementById('editCategoryValidationError').classList.remove('show');
+            document.getElementById('editCategoryModal').classList.add('active');
+        }
+
+        function closeEditCategoryModal() {
+            document.getElementById('editCategoryModal').classList.remove('active');
+            editingCategoryId_forEdit = null;
+        }
+
+        async function saveEditedCategory() {
+            const newName = document.getElementById('editCategoryName').value.trim();
+            const errorDiv = document.getElementById('editCategoryValidationError');
+
+            if (!newName) {
+                errorDiv.textContent = 'Por favor ingresa un nombre para la categoría';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            if (!editingCategoryId_forEdit) return;
+
+            const user = await mySupabase.auth.getUser();
+            if (!user.data.user) {
+                errorDiv.textContent = 'Error: Usuario no autenticado';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            const userId = user.data.user.id;
+
+            // Verificar si el nombre ya existe
+            const existingCategory = categories.find(c => c.name === newName && c.id !== editingCategoryId_forEdit && c.user_id === userId);
+            if (existingCategory) {
+                errorDiv.textContent = 'Ya existe una categoría con ese nombre';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            await mySupabase
+                .from('debt_categories')
+                .update({ name: newName })
+                .eq('id', editingCategoryId_forEdit);
+
+            closeEditCategoryModal();
+            loadData();
+        }
+
+        function openAddDebtModal(categoryId) {
+            isIncome = false;
+            editingDebtId = null;
+            editingCategoryId_forDebt = categoryId;
+            document.getElementById('debtModalTitle').textContent = 'Nueva Deuda';
+            document.getElementById('debtModalTitle').style.color = '#001a4d';
+            document.getElementById('debtDetail').value = '';
+            document.getElementById('debtAmount').value = '';
+            document.getElementById('debtStartDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('debtInstallments').value = '12';
+            document.getElementById('debtValidationError').classList.remove('show');
+            selectMontoType('total');
+            selectCurrency('CLP');
+            document.getElementById('exchangeRate').value = '';
+            document.getElementById('amountPreview').textContent = '';
+            document.getElementById('debtModal').classList.add('active');
+        }
+
+        function editDebt(categoryId, debtId) {
+            const debt = debts.find(d => d.id === debtId);
+            if (!debt) return;
+
+            isIncome = debt.total_amount < 0;
+            editingDebtId = debtId;
+            editingCategoryId_forDebt = categoryId;
+            document.getElementById('debtModalTitle').textContent = isIncome ? '💰 Editar Cuenta por Cobrar' : 'Editar Deuda';
+            document.getElementById('debtModalTitle').style.color = isIncome ? '#00aa00' : '#001a4d';
+            document.getElementById('debtDetail').value = debt.detail;
+            document.getElementById('debtStartDate').value = debt.start_date;
+            document.getElementById('debtInstallments').value = debt.num_installments;
+            document.getElementById('debtValidationError').classList.remove('show');
+
+            // Restaurar moneda y monto original desde localStorage
+            const savedMeta = JSON.parse(localStorage.getItem(`debt_meta_${debtId}`) || 'null');
+            if (savedMeta && savedMeta.currency) {
+                selectMontoType(savedMeta.montoType || 'total');
+                selectCurrency(savedMeta.currency);
+                document.getElementById('debtAmount').value = savedMeta.originalAmount;
+                if (savedMeta.exchangeRate) {
+                    document.getElementById('exchangeRate').value = savedMeta.exchangeRate;
+                }
+            } else {
+                selectMontoType('total');
+                selectCurrency('CLP');
+                document.getElementById('debtAmount').value = debt.total_amount;
+                document.getElementById('exchangeRate').value = '';
+            }
+
+            updateAmountPreview();
+            document.getElementById('debtModal').classList.add('active');
+        }
+
+        function selectMontoType(type) {
+            selectedMontoType = type;
+            document.getElementById('btnMontoTotal').classList.toggle('active', type === 'total');
+            document.getElementById('btnMontoCuota').classList.toggle('active', type === 'cuota');
+            document.getElementById('debtAmountLabel').textContent = type === 'total' ? 'Monto Total:' : 'Monto Cuota:';
+            updateAmountPreview();
+        }
+
+        function selectCurrency(currency) {
+            selectedCurrency = currency;
+            ['CLP','UF','USD'].forEach(c => {
+                document.getElementById('btn' + c).classList.toggle('active', c === currency);
+            });
+            const group = document.getElementById('exchangeRateGroup');
+            const label = document.getElementById('exchangeLabel');
+            if (currency === 'CLP') {
+                group.style.display = 'none';
+            } else {
+                group.style.display = 'block';
+                label.textContent = `1 ${currency} =`;
+                const rateInput = document.getElementById('exchangeRate');
+                if (!rateInput.value) {
+                    rateInput.value = currency === 'UF' ? '38000' : '970';
+                }
+            }
+            updateAmountPreview();
+        }
+
+        function updateAmountPreview() {
+            const amount = parseFloat(document.getElementById('debtAmount').value) || 0;
+            const installments = parseInt(document.getElementById('debtInstallments').value) || 0;
+            const rate = selectedCurrency === 'CLP' ? 1 : (parseFloat(document.getElementById('exchangeRate').value) || 0);
+            const preview = document.getElementById('amountPreview');
+            if (amount <= 0 || installments <= 0 || rate <= 0) {
+                preview.textContent = '';
+                return;
+            }
+            const amountCLP = amount * rate;
+            let text = '';
+            if (selectedMontoType === 'total') {
+                const cuota = amountCLP / installments;
+                const currStr = selectedCurrency !== 'CLP' ? ` (${amount} ${selectedCurrency} × $${formatNumber(rate)})` : '';
+                text = `Total: $${formatNumber(amountCLP)}${currStr}  →  Cuota: $${formatNumber(cuota)}`;
+            } else {
+                const total = amountCLP * installments;
+                const currStr = selectedCurrency !== 'CLP' ? ` (${amount} ${selectedCurrency} × $${formatNumber(rate)})` : '';
+                text = `Cuota: $${formatNumber(amountCLP)}${currStr}  →  Total: $${formatNumber(total)}`;
+            }
+            preview.textContent = text;
+        }
+
+        function closeDebtModal() {
+            document.getElementById('debtModal').classList.remove('active');
+        }
+
+        function openAddIncomeModal(categoryId) {
+            openAddDebtModal(categoryId);
+            isIncome = true;
+            document.getElementById('debtModalTitle').textContent = '💰 Nueva Cuenta por Cobrar';
+            document.getElementById('debtModalTitle').style.color = '#00aa00';
+        }
+
+        async function saveDebt() {
+            const detail = document.getElementById('debtDetail').value.trim();
+            const rawAmount = parseFloat(document.getElementById('debtAmount').value);
+            const startDate = document.getElementById('debtStartDate').value;
+            const installments = parseInt(document.getElementById('debtInstallments').value);
+            const rate = selectedCurrency === 'CLP' ? 1 : (parseFloat(document.getElementById('exchangeRate').value) || 0);
+
+            if (!detail || !rawAmount || !startDate || !installments || installments < 1) {
+                showValidationError('Por favor completa todos los campos correctamente');
+                return;
+            }
+            if (selectedCurrency !== 'CLP' && rate <= 0) {
+                showValidationError('Ingresa el tipo de cambio en pesos ($)');
+                return;
+            }
+
+            const amountCLP = rawAmount * rate;
+            let totalAmount, perInstallment;
+            if (selectedMontoType === 'total') {
+                totalAmount = amountCLP;
+                perInstallment = amountCLP / installments;
+            } else {
+                perInstallment = amountCLP;
+                totalAmount = amountCLP * installments;
+            }
+            // Cuentas por cobrar se almacenan con monto negativo
+            if (isIncome) { totalAmount = -Math.abs(totalAmount); perInstallment = -Math.abs(perInstallment); }
+
+            const user = await mySupabase.auth.getUser();
+            if (!user.data.user) {
+                showValidationError('Error: Usuario no autenticado');
+                return;
+            }
+
+            const userId = user.data.user.id;
+
+            if (editingDebtId) {
+                // Actualizar deuda
+                const { error: updateError } = await mySupabase
+                    .from('debts')
+                    .update({
+                        detail,
+                        total_amount: totalAmount,
+                        start_date: startDate,
+                        num_installments: installments
+                    })
+                    .eq('id', editingDebtId);
+
+                if (updateError) {
+                    showValidationError('Error al actualizar: ' + updateError.message);
+                    return;
+                }
+
+                // Guardar metadatos de moneda
+                localStorage.setItem(`debt_meta_${editingDebtId}`, JSON.stringify({
+                    currency: selectedCurrency,
+                    originalAmount: rawAmount,
+                    exchangeRate: selectedCurrency !== 'CLP' ? rate : null,
+                    montoType: selectedMontoType
+                }));
+
+                // Recalcular cuotas
+                const debt = debts.find(d => d.id === editingDebtId);
+                if (debt && debt.installments) {
+                    for (let i = 0; i < debt.installments.length; i++) {
+                        const newAmount = i === debt.installments.length - 1
+                            ? totalAmount - (perInstallment * (installments - 1))
+                            : perInstallment;
+
+                        const { error: instError } = await mySupabase
+                            .from('installments')
+                            .update({ amount: newAmount })
+                            .eq('id', debt.installments[i].id);
+
+                        if (instError) console.error('Error al actualizar cuota:', instError);
+                    }
+                }
+            } else {
+                // Crear deuda
+                const { data: debtData, error: debtError } = await mySupabase
+                    .from('debts')
+                    .insert([{
+                        user_id: userId,
+                        category_id: editingCategoryId_forDebt,
+                        detail,
+                        total_amount: totalAmount,
+                        start_date: startDate,
+                        num_installments: installments
+                    }])
+                    .select();
+
+                if (debtData && debtData.length > 0) {
+                    const newDebtId = debtData[0].id;
+
+                    // Guardar metadatos de moneda
+                    localStorage.setItem(`debt_meta_${newDebtId}`, JSON.stringify({
+                        currency: selectedCurrency,
+                        originalAmount: rawAmount,
+                        exchangeRate: selectedCurrency !== 'CLP' ? rate : null,
+                        montoType: selectedMontoType
+                    }));
+
+                    const startDateObj = new Date(startDate);
+
+                    for (let i = 0; i < installments; i++) {
+                        const dueDate = new Date(startDateObj);
+                        dueDate.setMonth(dueDate.getMonth() + i);
+
+                        const installmentAmount = i === installments - 1
+                            ? totalAmount - (perInstallment * (installments - 1))
+                            : perInstallment;
+
+                        const { error: instError } = await mySupabase
+                            .from('installments')
+                            .insert([{
+                                debt_id: newDebtId,
+                                month_number: i,
+                                amount: installmentAmount,
+                                due_date: dueDate.toISOString().split('T')[0],
+                                paid: false
+                            }]);
+
+                        if (instError) {
+                            console.error(`Error al crear cuota ${i + 1}:`, instError);
+                        }
+                    }
+                }
+            }
+
+            closeDebtModal();
+            await loadData();
+        }
+
+        function showValidationError(message) {
+            const errorEl = document.getElementById('debtValidationError');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+
+        async function deleteDebt(debtId, categoryId) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta deuda?')) {
+                await mySupabase
+                    .from('debts')
+                    .delete()
+                    .eq('id', debtId);
+
+                localStorage.removeItem(`debt_meta_${debtId}`);
+                loadData();
+            }
+        }
+
+        // LOGOUT
+        async function handleLogout() {
+            await mySupabase.auth.signOut();
+            goBack();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comidas/Salidas - org.BASE</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%); min-height: 100vh; color: #001a4d; }
+        .navbar { background: linear-gradient(135deg, #001a4d 0%, #003d99 100%); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2); }
+        .logo { font-size: 38px; font-weight: 700; text-decoration: none; display: flex; align-items: stretch; align-self: stretch; margin: -20px 0 -20px -40px; }
+        .navbar-right { display: flex; align-items: center; gap: 20px; }
+        .welcome-text { color: white; font-size: 16px; }
+        .profile-icon { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .logout-btn { padding: 10px 20px; background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: #e6f0ff; color: #0066cc; border: 2px solid #99ccff; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none; cursor: pointer; transition: all .2s; white-space: nowrap; }
+        .back-btn:hover { background: #0066cc; color: white; }
+        .container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; overflow-y: auto; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 40px; border-radius: 12px; width: 95%; max-width: 950px; box-shadow: 0 8px 24px rgba(0, 26, 77, 0.2); margin: 20px auto; }
+        .modal-header { font-size: 28px; font-weight: 700; margin-bottom: 30px; color: #001a4d; }
+        .form-group { margin-bottom: 25px; }
+        .form-label { font-weight: 700; margin-bottom: 10px; display: block; color: #001a4d; font-size: 16px; }
+        .form-input, .form-select { width: 100%; padding: 12px; border: 2px solid #99ccff; border-radius: 8px; font-size: 14px; font-family: 'Poppins', sans-serif; }
+        .input-row { display: flex; gap: 10px; }
+        .input-row input { flex: 1; }
+        .input-row button { background: #0066cc; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .persons-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .person-tag { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; background: transparent; border: 2px solid; font-weight: 600; }
+        .person-tag button { background: transparent; border: none; cursor: pointer; border-radius: 50%; width: 20px; height: 20px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        /* TABLA MEJORADA */
+        .table-wrapper { margin: 20px 0; border: 2px solid #99ccff; border-radius: 8px; overflow: hidden; background: white; }
+        .meal-table { width: 100%; border-collapse: collapse; }
+        .meal-table thead { background: #e6f0ff; position: sticky; top: 0; z-index: 10; }
+        .meal-table th { padding: 14px 10px; text-align: center; font-weight: 700; color: #001a4d; border-right: 2px solid #99ccff; font-size: 13px; }
+        .meal-table th:first-child { text-align: left; }
+        .meal-table th:last-child { border-right: none; }
+        .meal-table td { padding: 12px 10px; border-bottom: 1px solid #eee; text-align: center; }
+        .meal-table td:nth-child(1) { text-align: left; background: #fafafa; font-weight: 600; border-right: 2px solid #99ccff; }
+        .meal-table td:nth-child(2) { background: #fafafa; font-weight: 600; border-right: 2px solid #99ccff; }
+        .meal-table tbody tr { border: none; }
+        .meal-table tbody tr:hover td { background-color: #f5f5f5; }
+        .meal-table tbody tr:last-child td { border-bottom: none; }
+        .circle-btn { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #ccc; background: white; cursor: pointer; transition: all 0.2s; }
+        .circle-btn.active { background: #0066cc; border-color: #0066cc; box-shadow: 0 0 6px rgba(0, 102, 204, 0.3); }
+        .circle-btn:hover { border-color: #0066cc; }
+        .table-input-small { width: 70px; padding: 6px; border: 1px solid #99ccff; border-radius: 4px; font-size: 13px; text-align: center; }
+        .totals-row { background: #e6f0ff !important; font-weight: 700; border-top: 2px solid #99ccff; }
+        .add-dish-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+        .add-dish-row input { flex: 1; }
+        .add-dish-row-in-wrapper { display: flex; gap: 8px; align-items: center; padding: 12px; border-bottom: 2px solid #99ccff; background: #fafafa; }
+        .add-dish-row-in-wrapper input { flex: 1; padding: 10px; border: 1px solid #99ccff; border-radius: 4px; font-size: 13px; }
+        .add-dish-btn { background: transparent; border: none; color: #0066cc; font-size: 24px; cursor: pointer; font-weight: bold; padding: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+        .add-dish-btn:hover { color: #004499; }
+        .discount-tip { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 25px 0; }
+        .slider-group { display: flex; flex-direction: column; gap: 10px; }
+        .slider-label { display: flex; justify-content: space-between; font-weight: 600; color: #001a4d; }
+        input[type="range"] { width: 100%; height: 6px; background: #99ccff; border-radius: 3px; -webkit-appearance: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #0066cc; cursor: pointer; }
+        input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #0066cc; cursor: pointer; border: none; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 30px; }
+        .modal-buttons button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px; }
+        .btn-cancel { background: #999; color: white; }
+        .btn-save { background: #00aa00; color: white; opacity: 0.6; cursor: not-allowed; }
+        .btn-save:not(:disabled) { opacity: 1; cursor: pointer; }
+        .transfer-section { background: #fff9e6; border: 2px solid #ffd700; padding: 20px; border-radius: 8px; margin-top: 20px; text-align: center; display: none; }
+        .transfer-title { font-weight: 700; color: #001a4d; margin-bottom: 10px; }
+        .transfer-amount { font-size: 24px; font-weight: 700; color: #0066cc; }
+        .saved-meals { margin-top: 40px; }
+        .meals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; padding: 20px 0; }
+        .meal-card { 
+            padding: 20px; 
+            border-radius: 2px; 
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15), -2px 8px 8px rgba(0, 0, 0, 0.1); 
+            transform: rotate(var(--rotation)); 
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            transition: transform 0.3s;
+        }
+        .meal-card:hover { transform: rotate(var(--rotation)) scale(1.05); }
+        .meal-card::before { content: ''; position: absolute; top: -8px; right: 15px; width: 25px; height: 15px; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(0,0,0,0.1)); border-radius: 50%; }
+        .meal-card h3 { margin: 0 0 5px 0; font-size: 18px; color: #001a4d; }
+        .meal-card .header-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; font-size: 12px; }
+        .meal-card .payer-info { color: #0066cc; font-weight: 600; }
+        .meal-card .total-info { font-weight: 700; font-size: 14px; color: #001a4d; }
+        .meal-card .date-info { color: #999; font-size: 10px; }
+        .meal-card .persons-summary { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            margin: 15px 0; 
+            padding: 10px; 
+            border-top: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .meal-card .person-item { font-size: 13px; margin: 4px 0; }
+        .meal-card .person-name { font-weight: 600; }
+        .meal-card .person-amount { color: #0066cc; }
+        .meal-card-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .meal-card-actions button { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: opacity 0.2s; }
+        .meal-card-actions button:hover { opacity: 0.8; }
+        .meal-card.color-0 { background: #FFE5E5; }
+        .meal-card.color-1 { background: #FFF0E5; }
+        .meal-card.color-2 { background: #FFFCE5; }
+        .meal-card.color-3 { background: #E5FFE5; }
+        .meal-card.color-4 { background: #E5F5FF; }
+        .meal-card.color-5 { background: #F0E5FF; }
+        .btn-edit { background: #FFA500; color: white; font-size: 11px; }
+        .btn-share { background: #0066cc; color: white; font-size: 11px; }
+        .btn-delete { background: #ff6b6b; color: white; font-size: 11px; }
+        .add-meal-btn { background: #0066cc; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .error-msg { color: #ff6b6b; font-size: 13px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="Final.html" class="logo"><span style="background:white;-webkit-text-fill-color:#001a4d;font-weight:700;padding:0 12px 0 40px;display:flex;align-items:center;margin-right:-8px;">org</span><span style="display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0;align-self:center;flex-shrink:0;position:relative;z-index:1;"></span><span style="-webkit-text-fill-color:white;font-weight:700;align-self:center;padding-left:8px;">BASE</span></a>
+        <div class="navbar-right">
+            <span class="welcome-text" id="welcomeText">¡Bienvenido!</span>
+            <button class="logout-btn" onclick="handleLogout()">Cerrar sesión</button>
+            <div class="profile-icon" id="profileIcon">S</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <div style="display:flex;align-items:center;gap:16px;">
+                <a href="Final.html" class="back-btn">← Volver</a>
+                <h1>🍽️ Comidas/Salidas</h1>
+            </div>
+            <button class="add-meal-btn" onclick="openNewMealModal()">+ Agregar Nueva</button>
+        </div>
+
+        <div class="modal" id="mealModal">
+            <div class="modal-content">
+                <div class="modal-header">Nueva Comida</div>
+
+                <!-- NOMBRE -->
+                <div class="form-group">
+                    <label class="form-label">Nombre/Descripción</label>
+                    <input type="text" id="mealName" class="form-input" placeholder="ej: Almuerzo - Cevichería">
+                </div>
+
+                <!-- PERSONAS -->
+                <div class="form-group">
+                    <label class="form-label">👥 Personas</label>
+                    <div class="input-row">
+                        <input type="text" id="personInput" class="form-input" placeholder="Nombre de la persona" onkeypress="if(event.key==='Enter') addPerson()">
+                        <button onclick="addPerson()">+ Agregar</button>
+                    </div>
+                    <div class="persons-tags" id="personsTags"></div>
+                </div>
+
+                <!-- ¿QUIÉN ERES TÚ? (ABAJO DE PERSONAS) -->
+                <div class="form-group">
+                    <label class="form-label">¿Quién eres tú?</label>
+                    <select id="meSelect" class="form-select" onchange="updateTable()">
+                        <option value="">-- Selecciona --</option>
+                    </select>
+                </div>
+
+                <!-- TABLA PLATOS -->
+                <div class="form-group">
+                    <label class="form-label">🍴 Cuenta</label>
+                    
+                    <!-- Tabla + Input + Totales en un solo contenedor -->
+                    <div class="table-wrapper">
+                        <table class="meal-table">
+                            <thead>
+                                <tr id="headerRow">
+                                    <th style="width: 150px;">Descripción</th>
+                                    <th style="width: 90px;">Precio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+
+                <!-- ¿QUIÉN PAGÓ? -->
+                <div class="form-group">
+                    <label class="form-label">¿Quién pagó?</label>
+                    <select id="payerSelect" class="form-select" onchange="updateTable()">
+                        <option value="">-- Selecciona --</option>
+                    </select>
+                </div>
+
+                <!-- TRANSFERIR A -->
+                <div class="transfer-section" id="transferSection">
+                    <div class="transfer-title" id="transferTitle">-</div>
+                    <div id="transferDetails" style="margin-top: 12px; padding: 12px; background: #f5f5f5; border-radius: 6px; font-size: 14px;"></div>
+                </div>
+
+                <!-- BOTONES -->
+                <div class="modal-buttons">
+                    <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+                    <button class="btn-save" id="saveMealBtn" onclick="saveMeal()" disabled>Guardar Post-it</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="saved-meals" id="savedMealsSection">
+            <h2 style="margin-bottom: 20px;">📌 Post-its Guardados</h2>
+            <div class="meals-grid" id="mealsGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        const sbUrl = 'https://vfqjcyecqecfrevmnivy.supabase.co';
+        const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmcWpjeWVjcWVjZnJldm1uaXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTc3NTQsImV4cCI6MjA5ODUzMzc1NH0.dNdouTXa3p1ctM6IdJXm0U_bqopEFAh5NoJCeYNDdzk';
+        const mySupabase = supabase.createClient(sbUrl, sbKey);
+
+        let mealsData = [];
+
+        function formatNumber(n) { return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+        const colors = ['#ff0000', '#ff7f00', '#DAA520', '#00ff00', '#0000ff', '#4b0082', '#ff1493', '#00ced1', '#ff69b4', '#32cd32'];
+        
+        let state = { persons: [], dishes: [], checkedItems: {}, me: null, payer: null, discount: 0, tip: 0 };
+        let editingMealId = null;  // Trackear si estamos editando
+
+        function openNewMealModal() {
+            editingMealId = null;  // No estamos editando
+            state = { persons: [], dishes: [], checkedItems: {}, me: null, payer: null, discount: 0, tip: 0 };
+            document.getElementById('mealModal').classList.add('active');
+            document.getElementById('mealName').value = '';
+            document.querySelector('.modal-header').textContent = 'Nueva Comida';
+            document.getElementById('saveMealBtn').textContent = 'Guardar Post-it';
+            renderPersons();
+            updateTable();
+            // Limpiar inputs DESPUÉS de que updateTable() los genere
+            setTimeout(() => {
+                const dishName = document.getElementById('dishName');
+                const dishPrice = document.getElementById('dishPrice');
+                if (dishName) dishName.value = '';
+                if (dishPrice) dishPrice.value = '';
+            }, 0);
+        }
+
+        function closeModal() { document.getElementById('mealModal').classList.remove('active'); }
+
+        function editMeal(id) {
+            console.log('Editando meal:', id);
+            mySupabase.from('meals').select('*').eq('id', id).single().then(({ data: meal, error }) => {
+                if (error || !meal) {
+                    console.error('Error cargando meal:', error);
+                    return;
+                }
+                
+                try {
+                    const mealData = JSON.parse(meal.data);
+                    
+                    // Cargar estado
+                    state = {
+                        persons: mealData.persons || [],
+                        dishes: mealData.dishes || [],
+                        checkedItems: mealData.checkedItems || {},
+                        me: mealData.me,
+                        payer: mealData.payer,
+                        discount: mealData.discount || 0,
+                        tip: mealData.tip || 0
+                    };
+                    
+                    editingMealId = id;
+                    
+                    // Mostrar modal
+                    document.getElementById('mealModal').classList.add('active');
+                    document.getElementById('mealName').value = meal.name;
+                    document.querySelector('.modal-header').textContent = 'Editar Comida';
+                    document.getElementById('saveMealBtn').textContent = 'Actualizar Post-it';
+                    
+                    renderPersons();
+                    updateTable();
+                } catch(e) {
+                    console.error('Error parseando meal:', e);
+                }
+            });
+        }
+
+        function addPerson() {
+            const input = document.getElementById('personInput');
+            if (!input.value.trim()) return;
+            state.persons.push({ id: Date.now(), name: input.value.trim(), color: colors[state.persons.length % 10] });
+            input.value = '';
+            renderPersons();
+            updateTable();
+        }
+
+        function removePerson(id) {
+            state.persons = state.persons.filter(p => p.id !== id);
+            state.dishes.forEach(d => delete state.checkedItems[d.id + '_' + id]);
+            if (state.me === id) state.me = null;
+            if (state.payer === id) state.payer = null;
+            renderPersons();
+            updateTable();
+        }
+
+        function renderPersons() {
+            const tags = document.getElementById('personsTags');
+            tags.innerHTML = state.persons.map(p => `
+                <div class="person-tag" style="border-color: ${p.color}; color: ${p.color};">
+                    ${p.name}
+                    <button onclick="removePerson(${p.id})" style="color: ${p.color};">✕</button>
+                </div>
+            `).join('');
+
+            // ¿Quién eres tú?
+            const meSelect = document.getElementById('meSelect');
+            meSelect.innerHTML = '<option value="">-- Selecciona --</option>' + state.persons.map(p => `
+                <option value="${p.id}" ${state.me == p.id ? 'selected' : ''}>${p.name}</option>
+            `).join('');
+            meSelect.onchange = () => { state.me = meSelect.value ? parseInt(meSelect.value) : null; updateTable(); };
+
+            // ¿Quién pagó?
+            const payerSelect = document.getElementById('payerSelect');
+            payerSelect.innerHTML = '<option value="">-- Selecciona --</option>' + state.persons.map(p => `
+                <option value="${p.id}" ${state.payer == p.id ? 'selected' : ''}>${p.name}</option>
+            `).join('');
+            payerSelect.onchange = () => { state.payer = payerSelect.value ? parseInt(payerSelect.value) : null; updateTable(); };
+
+            // Encabezados dinámicos (se actualiza apenas se agreguen personas)
+            const headerRow = document.getElementById('headerRow');
+            if (headerRow) {
+                headerRow.innerHTML = `<th style="width: 150px;">Descripción</th><th style="width: 90px;">Precio</th>` + 
+                    state.persons.map(p => `<th style="color: ${p.color};">${p.name}</th>`).join('');
+            }
+        }
+
+        function removeDish(id) {
+            state.dishes = state.dishes.filter(d => d.id !== id);
+            // Limpiar checkedItems de ese plato
+            Object.keys(state.checkedItems).forEach(key => {
+                if (key.startsWith(id + '_')) delete state.checkedItems[key];
+            });
+            updateTable();
+        }
+
+        function addDish() {
+            const name = document.getElementById('dishName').value.trim();
+            const price = parseFloat(document.getElementById('dishPrice').value) || 0;
+            if (!name || price <= 0) { alert('Ingresa nombre y precio válido'); return; }
+            state.dishes.push({ id: Date.now(), name, price });
+            document.getElementById('dishName').value = '';
+            document.getElementById('dishPrice').value = '';
+            updateTable();
+        }
+
+        function toggleDish(dishId, personId) {
+            const key = dishId + '_' + personId;
+            state.checkedItems[key] = !state.checkedItems[key];
+            updateTable();
+        }
+
+        function updateTable() {
+            // Leer descuento y propina de inputs (si existen) o de state
+            const discountInput = document.getElementById('discountInput');
+            const tipInput = document.getElementById('tipInput');
+            const discount = discountInput ? (parseFloat(discountInput.value) || 0) : state.discount;
+            const tip = tipInput ? (parseFloat(tipInput.value) || 0) : state.tip;
+            state.discount = discount;
+            state.tip = tip;
+
+            const tbody = document.getElementById('tableBody');
+            
+            let html = '';
+            // Platos
+            if (state.dishes.length > 0) {
+                state.dishes.forEach(d => {
+                    html += '<tr><td><div style=\"display:flex; align-items:center; justify-content:space-between; gap:6px;\"><span>' + d.name + '</span><button onclick=\"removeDish(' + d.id + ')\" title=\"Eliminar\" style=\"background:transparent; border:none; color:#cc0000; font-size:16px; cursor:pointer; padding:0; line-height:1;\">✕</button></div></td><td>$' + formatNumber(d.price) + '</td>';
+                    state.persons.forEach(p => {
+                        const key = d.id + '_' + p.id;
+                        html += '<td><button class="circle-btn ' + (state.checkedItems[key] ? 'active' : '') + '" onclick="toggleDish(' + d.id + ', ' + p.id + ')"></button></td>';
+                    });
+                    html += '</tr>';
+                });
+            }
+
+            // Calcular totales por persona (dividiendo el costo entre quienes lo consumen)
+            const personTotals = {};
+            state.persons.forEach(p => {
+                personTotals[p.id] = 0;
+            });
+            
+            state.dishes.forEach(d => {
+                // Contar cuántas personas consumen este plato
+                let consumersCount = 0;
+                state.persons.forEach(p => {
+                    if (state.checkedItems[d.id + '_' + p.id]) consumersCount++;
+                });
+                
+                // Si alguien lo consume, dividir el precio
+                if (consumersCount > 0) {
+                    const pricePerPerson = d.price / consumersCount;
+                    state.persons.forEach(p => {
+                        if (state.checkedItems[d.id + '_' + p.id]) {
+                            personTotals[p.id] += pricePerPerson;
+                        }
+                    });
+                }
+            });
+
+            // FILA PARA AGREGAR PLATO
+            html += '<tr style="background: #fafafa; border-bottom: 2px solid #99ccff;"><td style="padding: 12px;"><input type="text" id="dishName" class="form-input" placeholder="Nombre del plato" style="width: 100%; padding: 8px; border: 1px solid #99ccff; border-radius: 4px; font-size: 13px;"></td><td style="padding: 12px;"><input type="number" id="dishPrice" class="form-input" placeholder="Precio" min="0" style="width: 100%; padding: 8px; border: 1px solid #99ccff; border-radius: 4px; font-size: 13px;"></td><td colspan="' + (state.persons.length > 0 ? state.persons.length : 1) + '" style="text-align: center; padding: 12px;"><button class="add-dish-btn" onclick="addDish()" title="Agregar plato">+</button></td></tr>';
+
+            // Calcular subtotal general
+            let subtotalGeneral = 0;
+            state.dishes.forEach(d => {
+                subtotalGeneral += d.price;
+            });
+
+            // SUBTOTAL (SIEMPRE VISIBLE)
+            html += '<tr class="totals-row"><td colspan="2">SUBTOTAL</td>';
+            state.persons.forEach(p => {
+                html += '<td>$' + formatNumber(personTotals[p.id]) + '</td>';
+            });
+            html += '</tr>';
+
+            // Calcular descuentos
+            const totalDiscount = subtotalGeneral * (discount / 100);
+
+            // DESCUENTO (SIEMPRE VISIBLE)
+            html += '<tr class="totals-row"><td>DESCUENTO %</td><td style="display: flex; align-items: center; gap: 8px;"><input type="number" id="discountInput" class="table-input-small" value="' + discount + '" min="0" max="100" oninput="updateTable()" style="width: 50px;">-$' + formatNumber(totalDiscount) + '</td>';
+            state.persons.forEach(p => {
+                const personDiscount = personTotals[p.id] * (discount / 100);
+                html += '<td style="color: #00aa00;">-$' + formatNumber(personDiscount) + '</td>';
+            });
+            html += '</tr>';
+
+            // Calcular propinas
+            const subtotalAfterDiscount = subtotalGeneral - totalDiscount;
+            const totalTip = subtotalGeneral * (tip / 100);
+
+            // PROPINA (SIEMPRE VISIBLE)
+            html += '<tr class="totals-row"><td>PROPINA %</td><td style="display: flex; align-items: center; gap: 8px;"><input type="number" id="tipInput" class="table-input-small" value="' + tip + '" min="0" max="100" oninput="updateTable()" style="width: 50px;">+$' + formatNumber(totalTip) + '</td>';
+            state.persons.forEach(p => {
+                const personTip = personTotals[p.id] * (tip / 100);
+                html += '<td style="color: #ff7f00;">+$' + formatNumber(personTip) + '</td>';
+            });
+            html += '</tr>';
+
+            // Calcular totales finales
+            const totalGeneral = subtotalAfterDiscount + totalTip;
+
+            // TOTAL (SIEMPRE VISIBLE)
+            html += '<tr class="totals-row"><td colspan="2" style="font-size: 16px;">TOTAL</td>';
+            state.persons.forEach(p => {
+                const sub = personTotals[p.id];
+                const desc = sub * (discount / 100);
+                const afterDisc = sub - desc;
+                const tip_amt = sub * (tip / 100);
+                html += '<td style="font-size: 16px;">$' + formatNumber(afterDisc + tip_amt) + '</td>';
+            });
+            html += '</tr>';
+
+            tbody.innerHTML = html;
+
+            // Transferir a
+            if (state.payer) {
+                const payer = state.persons.find(p => p.id === state.payer);
+                if (payer) {
+                    document.getElementById('transferSection').style.display = 'block';
+                    document.getElementById('transferTitle').textContent = 'Se le debe a pagar a ' + payer.name;
+                    
+                    // Generar desglose de todos los montos
+                    let details = '';
+                    state.persons.forEach(p => {
+                        if (p.id !== state.payer) {  // Mostrar todos excepto el pagador
+                            const sub = personTotals[p.id] || 0;
+                            const desc = sub * (discount / 100);
+                            const afterDisc = sub - desc;
+                            const tip_amt = sub * (tip / 100);
+                            const total = afterDisc + tip_amt;
+                            details += '<div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #ddd;"><span style="font-weight: 600;">' + p.name + ':</span><span style="color: #0066cc; font-weight: 600;">$' + formatNumber(total) + '</span></div>';
+                        }
+                    });
+                    document.getElementById('transferDetails').innerHTML = details;
+                }
+            } else {
+                document.getElementById('transferSection').style.display = 'none';
+            }
+
+            checkSaveButton();
+        }
+
+        function checkSaveButton() {
+            const hasPersons = state.persons.length > 0;
+            const hasDishes = state.dishes.length > 0;
+            const allAssigned = state.dishes.every(d => state.persons.some(p => state.checkedItems[d.id + '_' + p.id]));
+            const hasMe = state.me !== null;
+            const hasPayer = state.payer !== null;
+            document.getElementById('saveMealBtn').disabled = !hasPersons || !hasDishes || !allAssigned || !hasMe || !hasPayer;
+        }
+
+        async function saveMeal() {
+            const user = await mySupabase.auth.getUser();
+            if (!user.data.user) { alert('No autenticado'); return; }
+
+            // Calcular subtotales dividiendo platos compartidos (igual que updateTable)
+            const personSubtotals = {};
+            state.persons.forEach(p => { personSubtotals[p.id] = 0; });
+            state.dishes.forEach(d => {
+                let consumersCount = 0;
+                state.persons.forEach(p => { if (state.checkedItems[d.id + '_' + p.id]) consumersCount++; });
+                if (consumersCount > 0) {
+                    const pricePerPerson = d.price / consumersCount;
+                    state.persons.forEach(p => {
+                        if (state.checkedItems[d.id + '_' + p.id]) personSubtotals[p.id] += pricePerPerson;
+                    });
+                }
+            });
+
+            // Total por persona: subtotal - descuento + propina (propina sobre subtotal)
+            const personTotals = {};
+            state.persons.forEach(p => {
+                const sub = personSubtotals[p.id];
+                const desc = sub * (state.discount / 100);
+                const tip_amt = sub * (state.tip / 100);
+                personTotals[p.id] = sub - desc + tip_amt;
+            });
+
+            const mealData = {
+                name: document.getElementById('mealName').value || 'Comida - ' + new Date().toLocaleDateString('es-ES'),
+                data: JSON.stringify({
+                    persons: state.persons, 
+                    dishes: state.dishes, 
+                    checkedItems: state.checkedItems,
+                    personTotals, 
+                    me: state.me, 
+                    payer: state.payer, 
+                    discount: state.discount, 
+                    tip: state.tip,
+                    createdAt: new Date().toISOString()
+                })
+            };
+
+            if (editingMealId) {
+                // ACTUALIZAR
+                console.log('Actualizando meal:', editingMealId);
+                const { error } = await mySupabase
+                    .from('meals')
+                    .update(mealData)
+                    .eq('id', editingMealId);
+                
+                if (error) { 
+                    console.error('Error actualizando:', error.message);
+                    alert('Error: ' + error.message); 
+                    return; 
+                }
+                console.log('Post-it actualizado');
+                alert('✓ Post-it actualizado');
+            } else {
+                // CREAR NUEVO
+                console.log('Guardando meal nueva');
+                const dataToInsert = {
+                    ...mealData,
+                    user_id: user.data.user.id,
+                    created_at: new Date().toISOString()
+                };
+                
+                const { error } = await mySupabase.from('meals').insert([dataToInsert]);
+                if (error) { 
+                    console.error('Error guardando:', error.message);
+                    alert('Error: ' + error.message); 
+                    return; 
+                }
+                console.log('Post-it guardado exitosamente');
+                alert('✓ Post-it guardado');
+            }
+
+            closeModal();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            loadMeals();
+        }
+
+        async function loadMeals() {
+            const user = await mySupabase.auth.getUser();
+            if (!user.data.user) {
+                console.log('No hay usuario autenticado');
+                return;
+            }
+
+            console.log('Cargando meals para usuario:', user.data.user.id);
+
+            try {
+                // Intentar consulta simple primero
+                const { data, error } = await mySupabase
+                    .from('meals')
+                    .select('*')
+                    .eq('user_id', user.data.user.id)
+                    .order('created_at', { ascending: false });
+                
+                console.log('Respuesta de Supabase:', { data, error });
+
+                if (error) {
+                    console.error('Error detallado:', error.message, error.details);
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    console.log('No hay meals');
+                    const grid = document.getElementById('mealsGrid');
+                    grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;"><p>📌 Aquí aparecerán tus post-its guardados</p></div>';
+                    return;
+                }
+
+                console.log(`Encontrados ${data.length} meals`);
+
+                const meals = data.map(m => {
+                    try {
+                        const parsedData = JSON.parse(m.data);
+                        return { 
+                            id: m.id, 
+                            name: m.name, 
+                            created_at: m.created_at,
+                            createdAt: m.created_at,
+                            ...parsedData 
+                        };
+                    } catch(e) {
+                        console.error('Error parseando datos de comida:', e, m.data);
+                        return null;
+                    }
+                }).filter(m => m !== null);
+
+                mealsData = meals; // guardar globalmente para compartir
+
+                console.log('Meals parseadas:', meals.length);
+
+                const section = document.getElementById('savedMealsSection');
+                const grid = document.getElementById('mealsGrid');
+                section.style.display = 'block';
+
+                if (meals.length === 0) { 
+                    grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;"><p>📌 Aquí aparecerán tus post-its guardados</p></div>';
+                    return; 
+                }
+
+                grid.innerHTML = meals.map((m, idx) => {
+                    const payer = m.persons.find(p => p.id === m.payer);
+                    const payerName = payer ? payer.name : 'N/A';
+                    const total = Object.values(m.personTotals || {}).reduce((a, b) => a + b, 0);
+                    const rotation = (idx % 2 === 0) ? '-2deg' : '2deg';
+                    const colorClass = `color-${idx % 6}`;
+
+                    let personsList = '';
+                    m.persons.forEach(p => {
+                        if (p.id !== m.payer) {  // No mostrar al pagador
+                            const amount = m.personTotals[p.id] || 0;
+                            personsList += `<div class="person-item"><span class="person-name">${p.name}:</span> <span class="person-amount">$${formatNumber(amount)}</span></div>`;
+                        }
+                    });
+
+                    return `
+                        <div class="meal-card ${colorClass}" style="--rotation: ${rotation};">
+                            <div>
+                                <h3>${m.name}</h3>
+                                <div class="header-info">
+                                    <span class="date-info">${new Date(m.createdAt).toLocaleDateString('es-ES')}</span>
+                                    <span class="total-info">Total: $${formatNumber(total)}</span>
+                                </div>
+                                <div class="payer-info">Pagó: ${payerName}</div>
+                            </div>
+                            <div class="persons-summary">
+                                ${personsList}
+                            </div>
+                            <div class="meal-card-actions">
+                                <button class="btn-edit" onclick="editMeal('${m.id}')">✏️ Editar</button>
+                                <button class="btn-share" onclick="shareMeal('${m.id}')">📤 Compartir</button>
+                                <button class="btn-delete" onclick="deleteMeal('${m.id}')">🗑️ Eliminar</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch(e) {
+                console.error('Error en loadMeals:', e);
+            }
+        }
+
+        async function shareMeal(id) {
+            const meal = mealsData.find(m => m.id === id);
+            if (!meal) return;
+
+            const persons  = meal.persons || [];
+            const dishes   = meal.dishes  || [];
+            const checked  = meal.checkedItems || {};
+            const discount = meal.discount || 0;
+            const tip      = meal.tip      || 0;
+            const payer    = persons.find(p => p.id === meal.payer);
+            const payerName = payer ? payer.name : 'N/A';
+
+            // Calcular subtotales por persona
+            const subtotals = {};
+            persons.forEach(p => { subtotals[p.id] = 0; });
+            dishes.forEach(d => {
+                const consumers = persons.filter(p => checked[d.id + '_' + p.id]);
+                if (consumers.length > 0) {
+                    const share = d.price / consumers.length;
+                    consumers.forEach(p => { subtotals[p.id] += share; });
+                }
+            });
+
+            const subtotalGeneral = dishes.reduce((s, d) => s + d.price, 0);
+            const totalDiscountAmt = subtotalGeneral * (discount / 100);
+            const totalTipAmt      = subtotalGeneral * (tip / 100);
+            const personColors = ['#e63946','#2196f3','#ff9800','#4caf50','#9c27b0','#00bcd4'];
+
+            // --- Construir cabecera ---
+            let thCols = `<th style="text-align:left;padding:10px 8px;font-size:12px;color:#334;font-weight:700;border-bottom:2px solid #dde;">Descripción</th>
+                          <th style="text-align:right;padding:10px 8px;font-size:12px;color:#334;font-weight:700;border-bottom:2px solid #dde;">Precio</th>`;
+            persons.forEach((p, i) => {
+                const c = personColors[i % personColors.length];
+                thCols += `<th style="text-align:center;padding:10px 8px;font-size:12px;font-weight:700;color:${c};border-bottom:2px solid #dde;">${p.name}</th>`;
+            });
+
+            // --- Filas de platos ---
+            let dishRows = '';
+            dishes.forEach(d => {
+                dishRows += `<tr>
+                    <td style="padding:9px 8px;font-size:13px;color:#222;border-bottom:1px solid #f0f0f0;">${d.name}</td>
+                    <td style="padding:9px 8px;font-size:13px;text-align:right;color:#334;border-bottom:1px solid #f0f0f0;">$${formatNumber(d.price)}</td>`;
+                persons.forEach(p => {
+                    const consumed = checked[d.id + '_' + p.id];
+                    dishRows += `<td style="text-align:center;padding:9px 8px;border-bottom:1px solid #f0f0f0;">
+                        <div style="width:22px;height:22px;border-radius:50%;margin:0 auto;background:${consumed ? '#2196f3' : 'transparent'};border:2px solid ${consumed ? '#2196f3' : '#ccc'};"></div>
+                    </td>`;
+                });
+                dishRows += `</tr>`;
+            });
+
+            // --- SUBTOTAL ---
+            let subtotalRow = `<tr style="background:#f5f8ff;">
+                <td colspan="2" style="padding:9px 8px;font-size:12px;font-weight:700;color:#334;">SUBTOTAL</td>`;
+            persons.forEach(p => {
+                subtotalRow += `<td style="text-align:center;padding:9px 8px;font-size:13px;font-weight:600;color:#334;">$${formatNumber(subtotals[p.id])}</td>`;
+            });
+            subtotalRow += `</tr>`;
+
+            // --- DESCUENTO ---
+            let discRow = '';
+            if (discount > 0) {
+                discRow = `<tr style="background:#f5f8ff;">
+                    <td style="padding:9px 8px;font-size:12px;font-weight:700;color:#334;">DESCUENTO %</td>
+                    <td style="padding:9px 8px;font-size:12px;text-align:right;color:#334;">${discount}% &nbsp;-$${formatNumber(totalDiscountAmt)}</td>`;
+                persons.forEach(p => {
+                    const amt = subtotals[p.id] * (discount / 100);
+                    discRow += `<td style="text-align:center;padding:9px 8px;font-size:13px;font-weight:600;color:#16a34a;">-$${formatNumber(amt)}</td>`;
+                });
+                discRow += `</tr>`;
+            }
+
+            // --- PROPINA ---
+            let tipRow = '';
+            if (tip > 0) {
+                tipRow = `<tr style="background:#f5f8ff;">
+                    <td style="padding:9px 8px;font-size:12px;font-weight:700;color:#334;">PROPINA %</td>
+                    <td style="padding:9px 8px;font-size:12px;text-align:right;color:#334;">${tip}% &nbsp;+$${formatNumber(totalTipAmt)}</td>`;
+                persons.forEach(p => {
+                    const amt = subtotals[p.id] * (tip / 100);
+                    tipRow += `<td style="text-align:center;padding:9px 8px;font-size:13px;font-weight:600;color:#e65100;">+$${formatNumber(amt)}</td>`;
+                });
+                tipRow += `</tr>`;
+            }
+
+            // --- TOTAL ---
+            let totalRow = `<tr style="background:#eef3ff;border-top:2px solid #99ccff;">
+                <td colspan="2" style="padding:10px 8px;font-size:14px;font-weight:700;color:#001a4d;">TOTAL</td>`;
+            persons.forEach(p => {
+                const sub = subtotals[p.id];
+                const final = sub - sub * (discount / 100) + sub * (tip / 100);
+                totalRow += `<td style="text-align:center;padding:10px 8px;font-size:14px;font-weight:700;color:#001a4d;">$${formatNumber(final)}</td>`;
+            });
+            totalRow += `</tr>`;
+
+            // --- A quién pagarle ---
+            let debtRows = '';
+            persons.filter(p => p.id !== meal.payer).forEach(p => {
+                const sub = subtotals[p.id];
+                const final = Math.round(sub - sub * (discount / 100) + sub * (tip / 100));
+                debtRows += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #ffe0b2;font-size:14px;">
+                    <span style="color:#334;">${p.name}:</span>
+                    <span style="font-weight:700;color:#0066cc;">$${formatNumber(final)}</span>
+                </div>`;
+            });
+
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'position:fixed;left:-9999px;top:20px;width:520px;background:white;border-radius:16px;padding:24px;font-family:Poppins,sans-serif;';
+            wrap.innerHTML = `
+                <div style="text-align:center;margin-bottom:18px;">
+                    <div style="font-size:11px;color:#aaa;">${new Date(meal.createdAt).toLocaleDateString('es-CL')}</div>
+                    <div style="font-size:20px;font-weight:700;color:#001a4d;margin-top:4px;">${meal.name}</div>
+                </div>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:18px;">
+                    <thead><tr>${thCols}</tr></thead>
+                    <tbody>${dishRows}${subtotalRow}${discRow}${tipRow}${totalRow}</tbody>
+                </table>
+                <div style="background:#fff8e1;border-radius:10px;padding:14px 16px;">
+                    <div style="font-size:13px;font-weight:700;color:#001a4d;text-align:center;margin-bottom:10px;">Se le debe pagar a ${payerName}</div>
+                    ${debtRows}
+                </div>
+                <div style="text-align:center;margin-top:16px;font-size:10px;color:#bbb;letter-spacing:1.5px;">org.BASE</div>
+            `;
+            document.body.appendChild(wrap);
+
+            try {
+                const canvas = await html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+                document.body.removeChild(wrap);
+                canvas.toBlob(async (blob) => {
+                    const fileName = `comida-${meal.name.replace(/\s+/g, '-')}.png`;
+                    const file = new File([blob], fileName, { type: 'image/png' });
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({ title: meal.name, files: [file] });
+                    } else {
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = fileName;
+                        a.click();
+                        URL.revokeObjectURL(a.href);
+                    }
+                }, 'image/png');
+            } catch(e) {
+                if (document.body.contains(wrap)) document.body.removeChild(wrap);
+                alert('No se pudo generar la imagen.');
+            }
+        }
+
+        async function deleteMeal(id) {
+            if (!confirm('¿Eliminar?')) return;
+            const { error } = await mySupabase.from('meals').delete().eq('id', id);
+            if (error) {
+                console.error('Error eliminando meal:', error);
+            } else {
+                console.log('Meal eliminada:', id);
+                loadMeals();
+            }
+        }
+
+        function goBack() { window.location.href = 'Final.html'; }
+        async function handleLogout() { await mySupabase.auth.signOut(); goBack(); }
+
+        mySupabase.auth.getSession().then(({ data }) => {
+            if (data.session) {
+                const u = data.session.user;
+                const meta = u.user_metadata || {};
+                const fullName = (meta.full_name || ((meta.nombre || '') + ' ' + (meta.apellido || '')).trim()) || u.email.split('@')[0];
+                document.getElementById('welcomeText').textContent = `¡Bienvenido, ${fullName}!`;
+                document.getElementById('profileIcon').textContent = fullName.charAt(0).toUpperCase();
+                loadMeals();
+            } else {
+                goBack();
+            }
+        });
+    </script>
+</body>
+</html>
