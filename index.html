@@ -737,7 +737,7 @@
                 const { data, error } = await mySupabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.origin + '/index.html'
+                        redirectTo: 'https://org-sabe-web.vercel.app/'
                     }
                 });
 
