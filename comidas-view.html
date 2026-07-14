@@ -13,11 +13,14 @@
             box-sizing: border-box;
         }
 
+        html { overflow-x: hidden; }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%);
             min-height: 100vh;
             color: #001a4d;
+            overflow-x: hidden;
         }
 
         .container {
@@ -30,10 +33,10 @@
             background: linear-gradient(135deg, #001a4d 0%, #003d99 100%);
             color: white;
             padding: 30px;
-            border-radius: 12px;
+            border-radius: 16px;
             text-align: center;
             margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2);
+            box-shadow: 0 6px 20px rgba(0, 26, 77, 0.2);
         }
 
         .header h1 {
@@ -48,9 +51,9 @@
 
         .meal-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 25px;
-            box-shadow: 0 4px 12px rgba(0, 26, 77, 0.1);
+            box-shadow: 0 6px 20px rgba(0, 26, 77, 0.1);
             margin-bottom: 20px;
         }
 
@@ -178,6 +181,15 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+        /* ── RESPONSIVE ─────────────────────────── */
+        @media (max-width: 600px) {
+            .container { padding: 12px; margin: 16px auto; }
+            .header { padding: 22px 18px; border-radius: 12px; }
+            .header h1 { font-size: 22px; }
+            .meal-card { padding: 18px; }
+            .total-amount { font-size: 26px; }
+            .total-section { padding: 16px; }
         }
     </style>
 </head>
