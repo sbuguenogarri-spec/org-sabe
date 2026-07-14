@@ -2,6 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+  <link rel="preconnect" href="https://vfqjcyecqecfrevmnivy.supabase.co">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viajes - org.BASE</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,11 +17,14 @@
             box-sizing: border-box;
         }
 
+        html { overflow-x: hidden; }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%);
             min-height: 100vh;
             color: #001a4d;
+            overflow-x: hidden;
         }
 
         /* BARRA DE NAVEGACIÓN */
@@ -29,6 +35,11 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 12px rgba(0, 26, 77, 0.2);
+            flex-wrap: wrap;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .navbar-left {
@@ -51,16 +62,16 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 8px 18px;
-            background: #e6f0ff;
+            padding: 8px 16px;
+            background: white;
             color: #0066cc;
-            border: 2px solid #99ccff;
+            border: 2px solid #0066cc;
             border-radius: 8px;
             font-weight: 600;
             font-size: 13px;
             text-decoration: none;
             cursor: pointer;
-            transition: all .2s;
+            transition: all 0.3s ease;
             white-space: nowrap;
         }
 
@@ -130,19 +141,26 @@
         }
 
         .btn-add-trip {
-            padding: 12px 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 26px;
             background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 600;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(0,102,204,0.3);
+            white-space: nowrap;
         }
 
         .btn-add-trip:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.3);
+            box-shadow: 0 8px 22px rgba(0, 102, 204, 0.4);
         }
 
         /* MODAL */
@@ -166,7 +184,7 @@
         .modal-content {
             background: white;
             padding: 40px;
-            border-radius: 12px;
+            border-radius: 16px;
             max-width: 500px;
             width: 90%;
             box-shadow: 0 10px 40px rgba(0, 26, 77, 0.2);
@@ -197,7 +215,7 @@
         .form-group textarea {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #99ccff;
+            border: 2px solid #0066cc;
             border-radius: 8px;
             font-size: 14px;
             font-family: 'Poppins', sans-serif;
@@ -294,24 +312,33 @@
         }
 
         /* LISTA DE VIAJES */
-        .trips-list {
-            display: grid;
-            gap: 20px;
-        }
+        .trips-list { display: grid; gap: 20px; }
+
+        /* ── SKELETON ────────────────────────────────────── */
+        @keyframes shimmer { 0%{background-position:-200% 0}100%{background-position:200% 0} }
+        .sk{background:linear-gradient(90deg,#e8edf5 25%,#f0f4ff 50%,#e8edf5 75%);background-size:200% 100%;animation:shimmer 1.6s infinite;border-radius:6px;}
+        .sk-line{height:13px;margin-bottom:10px;} .sk-title{height:20px;width:50%;margin-bottom:14px;} .sk-short{width:35%;}
+        .sk-card{background:white;border-radius:16px;padding:25px;box-shadow:0 6px 20px rgba(0,26,77,0.1);border-left:5px solid #e8edf5;}
 
         .trip-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 25px;
             box-shadow: 0 6px 20px rgba(0, 26, 77, 0.1);
             border-left: 5px solid #ffaa00;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s ease;
+            animation: cardIn 0.4s ease both;
         }
 
         .trip-card:hover {
-            box-shadow: 0 12px 30px rgba(0, 26, 77, 0.15);
-            transform: translateY(-3px);
+            box-shadow: 0 16px 38px rgba(0, 26, 77, 0.18);
+            transform: translateY(-5px);
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .trip-header {
@@ -438,19 +465,150 @@
                 align-items: flex-start;
             }
 
+            .page-header h1 { font-size: 28px; }
+
             .modal-content {
-                padding: 30px 20px;
+                padding: 28px 20px;
             }
 
             .trip-stats {
                 flex-wrap: wrap;
+                gap: 12px;
             }
 
-            .navbar {
-                flex-wrap: wrap;
-            }
+            .navbar { padding: 16px 24px; }
         }
-    </style>
+
+        @media (max-width: 480px) {
+            .navbar { padding: 12px 16px; }
+            .logo { margin: -12px 0 -12px -16px; }
+            .welcome-text { display: none; }
+            .container { padding: 12px; }
+            .page-header h1 { font-size: 22px; }
+            .btn-add-trip { width: 100%; justify-content: center; }
+            .trip-card { padding: 18px; }
+            .trip-title { font-size: 18px; }
+            .trip-actions { flex-direction: column; }
+            .modal-content { padding: 20px 14px; }
+        }
+        /* ── BOTTOM NAV (mobile) ─────────────────────────────── */
+        .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid #dde8ff;z-index:500;padding:6px 0 max(6px,env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,26,77,0.1);}
+        @media(max-width:768px){.bottom-nav{display:flex;justify-content:space-around;}body{padding-bottom:68px!important;}}
+        .bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#99a;padding:4px 6px;border-radius:8px;transition:color .2s;min-width:40px;}
+        .bn-item.active,.bn-item:hover{color:#003d99;}.bn-icon{font-size:18px;line-height:1.2;}.bn-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;font-family:'Poppins',sans-serif;}
+    .page-subtitle { font-size: 13px; color: #0066cc; margin-top: 2px; font-weight: 400; }
+    /* ══════════════════════════════════════════════════════════════
+       MODO OSCURO — Rediseño completo
+    ══════════════════════════════════════════════════════════════ */
+    [data-theme=dark] { color-scheme: dark; }
+    [data-theme=dark] body { background: linear-gradient(135deg,#0d1117 0%,#161b22 100%) !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .navbar { background: linear-gradient(135deg,#080d18 0%,#0d1a33 100%) !important; }
+
+    /* Cards / secciones */
+    [data-theme=dark] .card,[data-theme=dark] .sum-card,[data-theme=dark] .table-section,
+    [data-theme=dark] .login-card,[data-theme=dark] .plant-card,[data-theme=dark] .trip-card,
+    [data-theme=dark] .category-section,[data-theme=dark] .summary-section,[data-theme=dark] .panel,
+    [data-theme=dark] .section,[data-theme=dark] .page-header,[data-theme=dark] .modal-content,
+    [data-theme=dark] .sk-card,[data-theme=dark] .sk-plant-card,[data-theme=dark] .info-card,
+    [data-theme=dark] .stat-chip,[data-theme=dark] .installment-card,[data-theme=dark] .add-form,
+    [data-theme=dark] .person-section,[data-theme=dark] .transfer-section,[data-theme=dark] .footer,
+    [data-theme=dark] .items-container,[data-theme=dark] .table-wrapper,[data-theme=dark] .participants-container,
+    [data-theme=dark] .checkboxes-group,[data-theme=dark] .installments-content {
+      background: #1e2a3d !important; color: #c9d1d9 !important; border-color: #2d3748 !important;
+    }
+
+    /* Texto principal */
+    [data-theme=dark] h1,[data-theme=dark] h2,[data-theme=dark] h3,[data-theme=dark] h4,
+    [data-theme=dark] .page-title,[data-theme=dark] .card-title,[data-theme=dark] .panel-title,
+    [data-theme=dark] .section-title,[data-theme=dark] .trip-title,[data-theme=dark] .card-nombre,
+    [data-theme=dark] .card-content,[data-theme=dark] .modal-header,[data-theme=dark] .summary-title,
+    [data-theme=dark] .category-name,[data-theme=dark] .debt-detail,[data-theme=dark] .info-label,
+    [data-theme=dark] .form-label { color: #c9d1d9 !important; }
+
+    [data-theme=dark] .page-subtitle,[data-theme=dark] .sum-label,[data-theme=dark] .welcome-text,
+    [data-theme=dark] .card-info,[data-theme=dark] .stat-label,[data-theme=dark] .card-notas,
+    [data-theme=dark] .section-label,[data-theme=dark] label,[data-theme=dark] .month-display,
+    [data-theme=dark] .installment-month { color: #8b9ab7 !important; }
+
+    /* Inputs / forms */
+    [data-theme=dark] input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]),
+    [data-theme=dark] select,[data-theme=dark] textarea {
+      background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important;
+    }
+    [data-theme=dark] input::placeholder,[data-theme=dark] textarea::placeholder { color: #4d6080 !important; }
+    [data-theme=dark] .form-group input:focus,[data-theme=dark] .form-group select:focus,
+    [data-theme=dark] .form-group textarea:focus { box-shadow: 0 0 8px rgba(77,148,255,0.2) !important; }
+
+    /* Tablas */
+    [data-theme=dark] td { border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] tr.header-row td { background: #1a2535 !important; color: #7b96c0 !important; }
+    [data-theme=dark] tr.sec-header td { background: #162033 !important; color: #8badd0 !important; }
+    [data-theme=dark] tr.total-row td  { background: #182030 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] tr.balance-row   { background: #162d1a !important; }
+    [data-theme=dark] tr.balance-row td { color: #4ade80 !important; }
+    [data-theme=dark] .input-cell input { color: #f87171 !important; background: transparent !important; }
+    [data-theme=dark] .summary-table th { background: #1a2535 !important; color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .summary-table td { background: #1e2a3d !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .summary-table tr:hover td { background: #243347 !important; }
+    [data-theme=dark] .debts-table th  { background: #1a2535 !important; color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .debts-table td  { border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .debts-table tr:hover { background: #243347 !important; }
+    [data-theme=dark] .meal-table thead { background: #1a2535 !important; }
+    [data-theme=dark] .meal-table th { color: #8badd0 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .meal-table td { border-color: #2d3748 !important; }
+    [data-theme=dark] .meal-table td:nth-child(1),[data-theme=dark] .meal-table td:nth-child(2) { background: #1a2535 !important; }
+    [data-theme=dark] .meal-table tbody tr:hover td { background: #1f2e42 !important; }
+    [data-theme=dark] .totals-row { background: #1a2535 !important; }
+
+    /* Navegador de meses */
+    [data-theme=dark] .month-nav { background: #162033 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .month-tab { background: #1a2535 !important; border-color: #2d3748 !important; color: #8b9ab7 !important; }
+    [data-theme=dark] .month-tab:hover { background: #1e2a3d !important; border-color: #4d6080 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .month-tab.active { background: linear-gradient(135deg,#003d99 0%,#0055cc 100%) !important; border-color: #003d99 !important; color: white !important; }
+    [data-theme=dark] .nav-arrow { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .nav-arrow:hover { background: #003d99 !important; color: white !important; border-color: #003d99 !important; }
+    [data-theme=dark] .table-header { border-bottom-color: #2d3748 !important; }
+
+    /* Botones */
+    [data-theme=dark] .back-btn { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .back-btn:hover { background: #2d3e55 !important; color: white !important; }
+    [data-theme=dark] .btn-cancel,[data-theme=dark] .btn-cancelar { background: #2d3748 !important; color: #c9d1d9 !important; border-color: #3d4f66 !important; }
+    [data-theme=dark] .btn-action { background: #1e2a3d !important; border-color: #2d3748 !important; color: #4d94ff !important; }
+    [data-theme=dark] .btn-action:hover { background: #2d3e55 !important; }
+    [data-theme=dark] .btn-config { background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.2) !important; }
+    [data-theme=dark] .month-nav-btn { background: #2d3e55 !important; }
+
+    /* Barra inferior */
+    [data-theme=dark] .bottom-nav { background: #0d1117 !important; border-top-color: #2d3748 !important; }
+    [data-theme=dark] .bn-item { color: #4d6080 !important; }
+    [data-theme=dark] .bn-item.active,[data-theme=dark] .bn-item:hover { color: #4d94ff !important; }
+
+    /* Skeleton */
+    [data-theme=dark] .sk { background: linear-gradient(90deg,#1a2535 25%,#1e2a3d 50%,#1a2535 75%) !important; background-size: 200% 100% !important; }
+
+    /* Misceláneos */
+    [data-theme=dark] .installment-amount,[data-theme=dark] .stat-value,[data-theme=dark] .info-value { color: #4d94ff !important; }
+    [data-theme=dark] .expand-btn { color: #4d94ff !important; }
+    [data-theme=dark] .panel-header { border-bottom-color: #2d3748 !important; }
+    [data-theme=dark] .items-container::-webkit-scrollbar-track { background: #162030; }
+    [data-theme=dark] .items-container::-webkit-scrollbar-thumb { background: #2d3748; }
+    [data-theme=dark] .card-img-wrap { background: linear-gradient(135deg,#162033,#1e2a3d) !important; }
+    [data-theme=dark] .status-badge.badge-ok { background: #162d1a !important; color: #4ade80 !important; }
+    [data-theme=dark] .installments-row { background: #162030 !important; }
+    [data-theme=dark] .category-color-dot { box-shadow: 0 0 0 2px #2d3748; }
+    [data-theme=dark] .add-category-input,[data-theme=dark] .add-category-row input { background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .var-popup-title { color: #c9d1d9 !important; }
+    [data-theme=dark] #var-detail-popup { background: #1e2a3d !important; box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important; }
+    [data-theme=dark] .divider { color: #4d6080 !important; }
+    [data-theme=dark] .links a { color: #4d94ff !important; }
+    [data-theme=dark] .google-btn { background: #1e2a3d !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .person-tag { border-color: #2d3748 !important; }
+    [data-theme=dark] .circle-btn { background: #1e2a3d !important; border-color: #2d3748 !important; }
+    [data-theme=dark] .circle-btn.active { background: #0066cc !important; }
+    [data-theme=dark] .table-input-small { background: #162030 !important; border-color: #2d3748 !important; color: #c9d1d9 !important; }
+    [data-theme=dark] .add-dish-row-in-wrapper { background: #162030 !important; border-color: #2d3748 !important; }
+    [data-theme=dark] #topMonthNavPlaceholder { background: transparent !important; }
+  </style>
 </head>
 <body>
 
@@ -458,8 +616,9 @@
     <nav class="navbar">
         <a href="Final.html" class="logo"><span style="background:white;-webkit-text-fill-color:#001a4d;font-weight:700;padding:0 12px 0 40px;display:flex;align-items:center;margin-right:-8px;">org</span><span style="display:block;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#ff0000,#ff7f00,#ffff00,#00ff00,#0000ff,#8b00ff);margin:0;align-self:center;flex-shrink:0;position:relative;z-index:1;"></span><span style="-webkit-text-fill-color:white;font-weight:700;align-self:center;padding-left:8px;">BASE</span></a>
         <div class="navbar-right">
-            <span class="welcome-text" id="welcomeText">¡Bienvenido!</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;"><span class="welcome-text" id="welcomeText">¡Bienvenido!</span><span id="navbar-datetime" style="font-size:11px;color:rgba(255,255,255,0.65);font-family:'Poppins',sans-serif;letter-spacing:0.2px;display:flex;gap:12px;"></span></div>
             <button class="logout-btn" onclick="handleLogout()">Cerrar sesión</button>
+            <button id="theme-toggle" onclick="toggleTheme()" title="Modo oscuro/claro" style="background:none;border:none;cursor:pointer;font-size:19px;padding:4px 6px;border-radius:8px;transition:background .2s;line-height:1;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='none'">🌙</button>
             <div class="profile-icon" id="profileIcon">S</div>
         </div>
     </nav>
@@ -467,15 +626,20 @@
     <!-- CONTENEDOR PRINCIPAL -->
     <div class="container">
         <div class="page-header">
-            <div style="display:flex;align-items:center;gap:20px;">
-                <a href="Final.html" class="back-btn">← Volver</a>
-                <h1>✈️ Mis Viajes</h1>
+            <div style="display:flex;align-items:flex-start;gap:20px;">
+                <a href="Final.html" class="back-btn" style="margin-top:4px;">← Volver</a>
+                <div>
+                    <h1>✈️ Mis Viajes</h1>
+                    <p class="page-subtitle">Organiza gastos compartidos en viajes grupales</p>
+                </div>
             </div>
             <button class="btn-add-trip" onclick="openCreateTripModal()">+ Crear Viaje</button>
         </div>
 
         <div class="trips-list" id="tripsList">
-            <!-- Los viajes se cargarán aquí dinámicamente -->
+            <div class="sk-card"><div class="sk sk-title"></div><div class="sk sk-line"></div><div class="sk sk-line sk-short"></div><div class="sk sk-line"></div></div>
+            <div class="sk-card"><div class="sk sk-title"></div><div class="sk sk-line"></div><div class="sk sk-line sk-short"></div></div>
+            <div class="sk-card"><div class="sk sk-title"></div><div class="sk sk-line"></div><div class="sk sk-line sk-short"></div><div class="sk sk-line"></div></div>
         </div>
     </div>
 
@@ -1254,6 +1418,22 @@
     </script>
 
     <div id="sharePreview" style="position:absolute;left:-9999px;top:0;"></div>
-
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav"><a href="Final.html" class="bn-item"><span class="bn-icon">🏠</span><span class="bn-label">Inicio</span></a><a href="resumen-global.html" class="bn-item"><span class="bn-icon">📊</span><span class="bn-label">Finanzas</span></a><a href="comidas.html" class="bn-item"><span class="bn-icon">🍽️</span><span class="bn-label">Comidas</span></a><a href="viajes.html" class="bn-item"><span class="bn-icon">✈️</span><span class="bn-label">Viajes</span></a><a href="deudas-tc.html" class="bn-item"><span class="bn-icon">💳</span><span class="bn-label">Deudas</span></a><a href="plantas.html" class="bn-item"><span class="bn-icon">🌿</span><span class="bn-label">Plantas</span></a><a href="wishlist.html" class="bn-item"><span class="bn-icon">🛍️</span><span class="bn-label">Lista</span></a></nav>
+<script>
+(function startClock(){
+  var dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  function tick(){
+    var el=document.getElementById('navbar-datetime');
+    if(!el)return;
+    var now=new Date();
+    var hh=String(now.getHours()).padStart(2,'0');
+    var mm=String(now.getMinutes()).padStart(2,'0');
+    el.innerHTML='<span>'+dias[now.getDay()]+' '+now.getDate()+' '+meses[now.getMonth()]+' '+now.getFullYear()+'</span><span>'+hh+':'+mm+'</span>';
+  }
+  tick();setInterval(tick,1000);
+})();
+</script><script>function toggleTheme(){var n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('org-theme',n);var b=document.getElementById('theme-toggle');if(b)b.textContent=n==='dark'?'☀️':'🌙';}(function(){var t=localStorage.getItem('org-theme');if(t)document.documentElement.setAttribute('data-theme',t);var b=document.getElementById('theme-toggle');if(b)b.textContent=(document.documentElement.getAttribute('data-theme')||'light')==='dark'?'☀️':'🌙';var p=(window.location.pathname.split('/').pop()||'Final.html');document.querySelectorAll('.bn-item').forEach(function(a){if((a.getAttribute('href')||'').split('/').pop()===p)a.classList.add('active');});})();</script>
 </body>
 </html>
