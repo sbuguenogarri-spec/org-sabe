@@ -1140,7 +1140,7 @@
         function formatNumber(num) {
             return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
-
+ 
         function parseLocalDate(str) {
             const [y, m, d] = str.split('-').map(Number);
             return new Date(y, m - 1, d);
@@ -1287,9 +1287,9 @@
                     let total = 0;
  
                     debts.forEach(debt => {
-                        if (debt.category_id === category.id && debt.total_amount >= 0) {
+                        if (debt.category_id === category.id) {
                             const installments = debt.installments || [];
-                            const debtStartDate = parselLocalDate(debt.start_date);
+                            const debtStartDate = parseLocalDate(debt.start_date);
                            
                             // Calcular mes relativo
                             const monthsDiff = (tempDate.getFullYear() - debtStartDate.getFullYear()) * 12 +
@@ -1304,7 +1304,14 @@
                         }
                     });
  
-                    cell.textContent = total !== 0 ? `$${formatNumber(total)}` : '-';
+                    if (total > 0) {
+                        cell.textContent = `$${formatNumber(total)}`;
+                    } else if (total < 0) {
+                        cell.textContent = `-$${formatNumber(Math.abs(total))}`;
+                        cell.style.color = '#00aa00';
+                    } else {
+                        cell.textContent = '-';
+                    }
                     cell.style.textAlign = 'right';
                     row.appendChild(cell);
                     tempDate.setMonth(tempDate.getMonth() + 1);
@@ -1329,7 +1336,7 @@
                 let total = 0;
                 debts.forEach(debt => {
                     if (debt.total_amount < 0) return;
-                    const debtStartDate = parselLocalDate(debt.start_date);
+                    const debtStartDate = parseLocalDate(debt.start_date);
                     const monthsDiff = (tempDateTotal.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                        (tempDateTotal.getMonth() - debtStartDate.getMonth());
                     if (monthsDiff >= 0 && monthsDiff < debt.num_installments) {
@@ -1375,35 +1382,39 @@
                 try {
                     const categoryDebts = debts.filter(d => d.category_id === category.id);
                     const regularDebts = categoryDebts.filter(d => d.total_amount >= 0);
-                    const totalDebt = regularDebts.reduce((sum, d) => sum + d.total_amount, 0);
+                    const totalDebt = categoryDebts.reduce((sum, d) => sum + Math.abs(parseFloat(d.total_amount)), 0);
                    
                     // Deuda mes actual (según currentMonth seleccionado)
                     let currentMonthDebt = 0;
-                    regularDebts.forEach(d => {
-                        const debtStartDate = new Date(d.start_date);
+                    categoryDebts.forEach(d => {
+                        const debtStartDate = parseLocalDate(d.start_date);
                         const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                            (currentMonth.getMonth() - debtStartDate.getMonth());
                         if (monthsDiff >= 0 && monthsDiff < d.num_installments) {
                             const inst = (d.installments || []).find(i => Number(i.month_number) === monthsDiff);
-                            if (inst && inst.paid !== true) currentMonthDebt += parseFloat(inst.amount);
+                            if (inst && inst.paid !== true) currentMonthDebt += Math.abs(parseFloat(inst.amount));
                         }
                     });
  
                     // Deuda próximo mes
                     let nextMonthDebt = 0;
-                    regularDebts.forEach(d => {
-                        const debtStartDate = new Date(d.start_date);
+                    categoryDebts.forEach(d => {
+                        const debtStartDate = parseLocalDate(d.start_date);
                         const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                            (currentMonth.getMonth() - debtStartDate.getMonth()) + 1;
                         if (monthsDiff >= 0 && monthsDiff < d.num_installments) {
                             const inst = (d.installments || []).find(i => Number(i.month_number) === monthsDiff);
-                            if (inst && inst.paid !== true) nextMonthDebt += parseFloat(inst.amount);
+                            if (inst && inst.paid !== true) nextMonthDebt += Math.abs(parseFloat(inst.amount));
                         }
                     });
  
                     const section = document.createElement('div');
                     section.className = 'category-section';
                     section.style.borderLeftColor = category.color;
+ 
+                    const isIncomeOnly = regularDebts.length === 0 && categoryDebts.length > 0;
+                    const amtPrefix = isIncomeOnly ? '+' : '';
+                    const mesActualColor = isIncomeOnly ? '#00aa00' : '#ff6b6b';
  
                     section.innerHTML = `
                         <div class="category-header" style="margin-bottom: 0; cursor: pointer;" onclick="toggleCategory('${category.id}')">
@@ -1418,15 +1429,15 @@
                             <div class="category-stats">
                                 <div class="stat">
                                     <span class="stat-label">Deuda Total</span>
-                                    <span class="stat-value">$${formatNumber(totalDebt)}</span>
+                                    <span class="stat-value">${amtPrefix}$${formatNumber(totalDebt)}</span>
                                 </div>
                                 <div class="stat">
                                     <span class="stat-label">Deuda Mes Actual</span>
-                                    <span class="stat-value" style="color: #ff6b6b;">$${formatNumber(currentMonthDebt)}</span>
+                                    <span class="stat-value" style="color: ${mesActualColor};">${amtPrefix}$${formatNumber(currentMonthDebt)}</span>
                                 </div>
                                 <div class="stat">
                                     <span class="stat-label">Deuda Próximo Mes</span>
-                                    <span class="stat-value">$${formatNumber(nextMonthDebt)}</span>
+                                    <span class="stat-value">${amtPrefix}$${formatNumber(nextMonthDebt)}</span>
                                 </div>
                             </div>
                             <div class="category-actions">
@@ -1575,7 +1586,7 @@
             // (descontando meses ya transcurridos desde el inicio de cada deuda)
             let maxInstallments = 0;
             categoryDebts.forEach(debt => {
-                const startDate = parselLocalDate(debt.start_date);
+                const startDate = parseLocalDate(debt.start_date);
                 const monthsToStart = (startDate.getFullYear() - currentMonth.getFullYear()) * 12 +
                                       (startDate.getMonth() - currentMonth.getMonth());
                 const colsNeeded = Math.max(0, monthsToStart + debt.num_installments);
@@ -1600,7 +1611,7 @@
             const _incomeDebts  = categoryDebts.filter(d => d.total_amount < 0);
  
             _regularDebts.forEach(debt => {
-                const debtStartDate = parselLocalDate(debt.start_date);
+                const debtStartDate = parseLocalDate(debt.start_date);
                 const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                    (currentMonth.getMonth() - debtStartDate.getMonth());
                 const unpaidCount = (debt.installments || []).filter(inst => inst.paid !== true && inst.month_number >= monthsDiff).length;
@@ -1668,7 +1679,7 @@
                     <div class="debt-detail-panel">
                         <div class="detail-item">
                             <span class="detail-label">Inicio</span>
-                            <span class="detail-value">${parselLocalDate(debt.start_date).toLocaleDateString('es-CL')}</span>
+                            <span class="detail-value">${new Date(debt.start_date).toLocaleDateString('es-CL')}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Total Cuotas</span>
@@ -1707,7 +1718,7 @@
                 body.appendChild(sepRow);
  
                 _incomeDebts.forEach(debt => {
-                    const debtStartDate = parselLocalDate(debt.start_date);
+                    const debtStartDate = parseLocalDate(debt.start_date);
                     const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                        (currentMonth.getMonth() - debtStartDate.getMonth());
                     const unpaidCount = (debt.installments || []).filter(inst => inst.paid !== true && inst.month_number >= monthsDiff).length;
@@ -1744,10 +1755,10 @@
                             const inst = (debt.installments || []).find(x => Number(x.month_number) === diff);
                             if (inst && inst.paid !== true) amount = parseFloat(inst.amount);
                         }
-                        cell.textContent = amount > 0 ? `+$${formatNumber(amount)}` : '-';
+                        cell.textContent = amount !== 0 ? `+$${formatNumber(Math.abs(amount))}` : '-';
                         cell.style.textAlign = 'center';
                         cell.style.fontWeight = '600';
-                        if (amount > 0) cell.style.color = '#00aa00';
+                        if (amount !== 0) cell.style.color = '#00aa00';
                         row.appendChild(cell);
                         tempDate3.setMonth(tempDate3.getMonth() + 1);
                     }
@@ -1766,7 +1777,7 @@
                         <div class="debt-detail-panel" style="background:#f0fff4;border-top-color:#b2dfdb;">
                             <div class="detail-item">
                                 <span class="detail-label">Inicio</span>
-                                <span class="detail-value">${parselLocalDate(debt.start_date).toLocaleDateString('es-CL')}</span>
+                                <span class="detail-value">${new Date(debt.start_date).toLocaleDateString('es-CL')}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Total Cuotas</span>
