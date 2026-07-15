@@ -1140,6 +1140,11 @@
         function formatNumber(num) {
             return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
+
+        function parseLocalDate(str) {
+            const [y, m, d] = str.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        }
  
         function getMonthYearString(date) {
             const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -1284,14 +1289,14 @@
                     debts.forEach(debt => {
                         if (debt.category_id === category.id && debt.total_amount >= 0) {
                             const installments = debt.installments || [];
-                            const debtStartDate = new Date(debt.start_date);
+                            const debtStartDate = parselLocalDate(debt.start_date);
                            
                             // Calcular mes relativo
                             const monthsDiff = (tempDate.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                              (tempDate.getMonth() - debtStartDate.getMonth());
                            
                             if (monthsDiff >= 0 && monthsDiff < debt.num_installments) {
-                                const installment = installments.find(inst => inst.month_number === monthsDiff);
+                                const installment = installments.find(inst => Number(inst.month_number) === monthsDiff);
                                 if (installment && installment.paid !== true) {
                                     total += parseFloat(installment.amount);
                                 }
@@ -1299,7 +1304,7 @@
                         }
                     });
  
-                    cell.textContent = total > 0 ? `$${formatNumber(total)}` : '-';
+                    cell.textContent = total !== 0 ? `$${formatNumber(total)}` : '-';
                     cell.style.textAlign = 'right';
                     row.appendChild(cell);
                     tempDate.setMonth(tempDate.getMonth() + 1);
@@ -1324,15 +1329,15 @@
                 let total = 0;
                 debts.forEach(debt => {
                     if (debt.total_amount < 0) return;
-                    const debtStartDate = new Date(debt.start_date);
+                    const debtStartDate = parselLocalDate(debt.start_date);
                     const monthsDiff = (tempDateTotal.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                        (tempDateTotal.getMonth() - debtStartDate.getMonth());
                     if (monthsDiff >= 0 && monthsDiff < debt.num_installments) {
-                        const inst = (debt.installments || []).find(x => x.month_number === monthsDiff);
+                        const inst = (debt.installments || []).find(x => Number(x.month_number) === monthsDiff);
                         if (inst && inst.paid !== true) total += parseFloat(inst.amount);
                     }
                 });
-                cell.textContent = total > 0 ? `$${formatNumber(total)}` : '-';
+                cell.textContent = total !== 0 ? `$${formatNumber(total)}` : '-';
                 cell.style.textAlign = 'right';
                 cell.style.color = '#0066cc';
                 totalRow.appendChild(cell);
@@ -1379,7 +1384,7 @@
                         const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                            (currentMonth.getMonth() - debtStartDate.getMonth());
                         if (monthsDiff >= 0 && monthsDiff < d.num_installments) {
-                            const inst = (d.installments || []).find(i => i.month_number === monthsDiff);
+                            const inst = (d.installments || []).find(i => Number(i.month_number) === monthsDiff);
                             if (inst && inst.paid !== true) currentMonthDebt += parseFloat(inst.amount);
                         }
                     });
@@ -1391,7 +1396,7 @@
                         const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                            (currentMonth.getMonth() - debtStartDate.getMonth()) + 1;
                         if (monthsDiff >= 0 && monthsDiff < d.num_installments) {
-                            const inst = (d.installments || []).find(i => i.month_number === monthsDiff);
+                            const inst = (d.installments || []).find(i => Number(i.month_number) === monthsDiff);
                             if (inst && inst.paid !== true) nextMonthDebt += parseFloat(inst.amount);
                         }
                     });
@@ -1570,7 +1575,7 @@
             // (descontando meses ya transcurridos desde el inicio de cada deuda)
             let maxInstallments = 0;
             categoryDebts.forEach(debt => {
-                const startDate = new Date(debt.start_date);
+                const startDate = parselLocalDate(debt.start_date);
                 const monthsToStart = (startDate.getFullYear() - currentMonth.getFullYear()) * 12 +
                                       (startDate.getMonth() - currentMonth.getMonth());
                 const colsNeeded = Math.max(0, monthsToStart + debt.num_installments);
@@ -1595,7 +1600,7 @@
             const _incomeDebts  = categoryDebts.filter(d => d.total_amount < 0);
  
             _regularDebts.forEach(debt => {
-                const debtStartDate = new Date(debt.start_date);
+                const debtStartDate = parselLocalDate(debt.start_date);
                 const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                    (currentMonth.getMonth() - debtStartDate.getMonth());
                 const unpaidCount = (debt.installments || []).filter(inst => inst.paid !== true && inst.month_number >= monthsDiff).length;
@@ -1628,7 +1633,7 @@
                                  (tempDate2.getMonth() - debtStartDate.getMonth());
                     let amount = 0;
                     if (diff >= 0 && diff < debt.num_installments) {
-                        const inst = (debt.installments || []).find(x => x.month_number === diff);
+                        const inst = (debt.installments || []).find(x => Number(x.month_number) === diff);
                         if (inst && inst.paid !== true) amount = parseFloat(inst.amount);
                     }
                     if (amount > 0) {
@@ -1663,7 +1668,7 @@
                     <div class="debt-detail-panel">
                         <div class="detail-item">
                             <span class="detail-label">Inicio</span>
-                            <span class="detail-value">${new Date(debt.start_date).toLocaleDateString('es-CL')}</span>
+                            <span class="detail-value">${parselLocalDate(debt.start_date).toLocaleDateString('es-CL')}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Total Cuotas</span>
@@ -1702,7 +1707,7 @@
                 body.appendChild(sepRow);
  
                 _incomeDebts.forEach(debt => {
-                    const debtStartDate = new Date(debt.start_date);
+                    const debtStartDate = parselLocalDate(debt.start_date);
                     const monthsDiff = (currentMonth.getFullYear() - debtStartDate.getFullYear()) * 12 +
                                        (currentMonth.getMonth() - debtStartDate.getMonth());
                     const unpaidCount = (debt.installments || []).filter(inst => inst.paid !== true && inst.month_number >= monthsDiff).length;
@@ -1736,7 +1741,7 @@
                                      (tempDate3.getMonth() - debtStartDate.getMonth());
                         let amount = 0;
                         if (diff >= 0 && diff < debt.num_installments) {
-                            const inst = (debt.installments || []).find(x => x.month_number === diff);
+                            const inst = (debt.installments || []).find(x => Number(x.month_number) === diff);
                             if (inst && inst.paid !== true) amount = parseFloat(inst.amount);
                         }
                         cell.textContent = amount > 0 ? `+$${formatNumber(amount)}` : '-';
@@ -1761,7 +1766,7 @@
                         <div class="debt-detail-panel" style="background:#f0fff4;border-top-color:#b2dfdb;">
                             <div class="detail-item">
                                 <span class="detail-label">Inicio</span>
-                                <span class="detail-value">${new Date(debt.start_date).toLocaleDateString('es-CL')}</span>
+                                <span class="detail-value">${parselLocalDate(debt.start_date).toLocaleDateString('es-CL')}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Total Cuotas</span>
