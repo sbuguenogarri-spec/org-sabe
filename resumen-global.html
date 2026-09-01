@@ -303,7 +303,7 @@
   const DEFAULT_FIXED_CATS = ['Arriendo/Dividendo','Luz','Agua','Internet','Celular','Gastos Comunes'];
   let fixedCategories = ['Arriendo/Dividendo','Luz','Agua','Internet','Celular','Gastos Comunes'];
   let varCategories = ['Supermercado','Transporte','Salud','Ropa','Entretenimiento','Otro'];
-  let selectedMonth = '2026-06';
+  let selectedMonth = localStorage.getItem('rg_selectedMonth') || '2026-06';
   let allMonths = [];
   let visibleMonths = [];
   let allData = {};
@@ -529,6 +529,7 @@
     const idx = allMonths.indexOf(selectedMonth);
     const newIdx = Math.max(0, Math.min(allMonths.length-1, idx + dir));
     selectedMonth = allMonths[newIdx];
+    localStorage.setItem('rg_selectedMonth', selectedMonth);
     initVisibleMonths();
     renderMonthTabs();
     loadAll().then(() => renderTable());
@@ -536,6 +537,7 @@
 
   async function selectMonth(m) {
     selectedMonth = m;
+    localStorage.setItem('rg_selectedMonth', selectedMonth);
     renderMonthTabs();
     await loadAll();
     renderTable();
