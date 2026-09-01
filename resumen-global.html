@@ -12,14 +12,93 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { overflow-x: hidden; }
-    body { font-family: "Poppins", sans-serif; background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%); min-height: 100vh; color: #001a4d; overflow-x: hidden; }
+    body { font-family: "Poppins", sans-serif; background: linear-gradient(135deg, #e6f0ff 0%, #f0e6ff 100%); min-height: 100vh; color: #001a4d; overflow-x: hidden; padding: 20px; }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 26, 77, 0.1);
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #001a4d;
+      font-size: 28px;
+    }
+    
+    .months-nav {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .month-btn {
+      padding: 10px 20px;
+      background: #f0f0f0;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+    
+    .month-btn.active {
+      background: #6366f1;
+      color: white;
+      border-color: #6366f1;
+    }
+    
+    .month-btn:hover {
+      border-color: #6366f1;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      font-size: 16px;
+      color: #666;
+    }
+    
+    .content-area {
+      min-height: 300px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
+
+<div class="container">
+  <h1>Resumen Global - org.BASE</h1>
+  
+  <div class="months-nav" id="monthsNav">
+    <div class="loading">Cargando meses...</div>
+  </div>
+  
+  <div class="content-area" id="contentArea">
+    <div class="loading">Inicializando...</div>
+  </div>
+</div>
+
 <script>
   const sbUrl = 'https://vfqjcyecqecfrevmnivy.supabase.co';
-  const sbKey = 'REDACTED';
-  const mySupabase = supabase.createClient(sbUrl, sbKey);
+  const sbKey = 'REDACTED'; // ⚠️ IMPORTANTE: Reemplazar con tu clave de Supabase
+  
+  let mySupabase;
+  
+  try {
+    mySupabase = supabase.createClient(sbUrl, sbKey);
+  } catch (e) {
+    console.error('Error inicializando Supabase:', e);
+    document.getElementById('contentArea').innerHTML = '<p style="color: red;">Error: No se pudo conectar a Supabase. Verifica la clave en línea 22.</p>';
+  }
 
   let currentUser = null;
   let ufValue = 38000;
@@ -36,9 +115,11 @@
   let arrSubcats = [];
 
   const _SEL_MONTH_KEY = () => `rg_selected_month_${currentUser?.id || 'anon'}`;
+  
   function saveSelectedMonth() {
     try { localStorage.setItem(_SEL_MONTH_KEY(), selectedMonth); } catch(e) {}
   }
+  
   function loadSelectedMonth() {
     try {
       const m = localStorage.getItem(_SEL_MONTH_KEY());
@@ -70,20 +151,18 @@
     }
   }
 
-  mySupabase.auth.getSession().then(({ data }) => {
-    if (data.session) {
-      currentUser = data.session.user;
-      allMonths = generateMonths();
-
-      const lastMonth = loadSelectedMonth();
-      if (lastMonth && allMonths.includes(lastMonth)) {
-        selectedMonth = lastMonth;
-      }
-
-      initVisibleMonths();
-      init();
-    } else { window.location.href = 'Final.html'; }
-  });
+  function renderMonths() {
+    const monthsNav = document.getElementById('monthsNav');
+    monthsNav.innerHTML = '';
+    
+    allMonths.forEach(month => {
+      const btn = document.createElement('button');
+      btn.className = 'month-btn' + (month === selectedMonth ? ' active' : '');
+      btn.textContent = new Date(month + '-01').toLocaleDateString('es-ES', { year: 'numeric', month: 'long' });
+      btn.onclick = () => selectMonth(month);
+      monthsNav.appendChild(btn);
+    });
+  }
 
   function scrollMonths(dir) {
     const idx = allMonths.indexOf(selectedMonth);
@@ -91,15 +170,50 @@
     selectedMonth = allMonths[newIdx];
     saveSelectedMonth();
     initVisibleMonths();
+    renderMonths();
   }
 
   async function selectMonth(m) {
     selectedMonth = m;
     saveSelectedMonth();
     initVisibleMonths();
+    renderMonths();
+    await init();
   }
 
-  async function init() {}
+  async function init() {
+    const contentArea = document.getElementById('contentArea');
+    contentArea.innerHTML = `<p>Mes seleccionado: <strong>${selectedMonth}</strong></p>
+                             <p>Usuario: <strong>${currentUser?.email || 'Cargando...'}</strong></p>
+                             <p>Este es tu resumen global. Los datos se cargarán aquí.</p>`;
+  }
+
+  if (!mySupabase) {
+    document.getElementById('contentArea').innerHTML = '<p style="color: red; font-weight: bold;">⚠️ Error: Supabase no está configurado. Por favor, verifica tu clave en el archivo.</p>';
+  } else {
+    mySupabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        currentUser = data.session.user;
+        allMonths = generateMonths();
+
+        const lastMonth = loadSelectedMonth();
+        if (lastMonth && allMonths.includes(lastMonth)) {
+          selectedMonth = lastMonth;
+        }
+
+        initVisibleMonths();
+        renderMonths();
+        init();
+      } else { 
+        window.location.href = 'Final.html'; 
+      }
+    }).catch(err => {
+      console.error('Error en getSession:', err);
+      document.getElementById('contentArea').innerHTML = '<p style="color: red;">Error de autenticación. Redirigiendo...</p>';
+      setTimeout(() => { window.location.href = 'Final.html'; }, 2000);
+    });
+  }
 </script>
+
 </body>
 </html>
