@@ -1141,6 +1141,17 @@
         function formatNumber(num) {
             return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
+
+        function getDebtDisplay(value, zeroText = '-') {
+            const num = parseFloat(value) || 0;
+            if (num < 0) {
+                return { text: `+$${formatNumber(Math.abs(num))}`, color: '#00aa00' };
+            }
+            if (num > 0) {
+                return { text: `$${formatNumber(num)}`, color: '#001a4d' };
+            }
+            return { text: zeroText, color: '#001a4d' };
+        }
  
         function parseLocalDate(str) {
             const [y, m, d] = str.split('-').map(Number);
@@ -1340,14 +1351,9 @@
                         }
                     });
  
-                    if (total > 0) {
-                        cell.textContent = `$${formatNumber(total)}`;
-                    } else if (total < 0) {
-                        cell.textContent = `-$${formatNumber(Math.abs(total))}`;
-                        cell.style.color = '#00aa00';
-                    } else {
-                        cell.textContent = '-';
-                    }
+                    const debtDisplay = getDebtDisplay(total);
+                    cell.textContent = debtDisplay.text;
+                    cell.style.color = debtDisplay.color;
                     cell.style.textAlign = 'right';
                     row.appendChild(cell);
                     tempDate.setMonth(tempDate.getMonth() + 1);
@@ -1417,8 +1423,7 @@
             categories.forEach(category => {
                 try {
                     const categoryDebts = debts.filter(d => d.category_id === category.id);
-                    const regularDebts = categoryDebts.filter(d => d.total_amount >= 0);
-                    const totalDebt = categoryDebts.reduce((sum, d) => sum + Math.abs(parseFloat(d.total_amount)), 0);
+                    const totalDebt = categoryDebts.reduce((sum, d) => sum + parseFloat(d.total_amount || 0), 0);
                    
                     // Deuda mes actual (según currentMonth seleccionado)
                     let currentMonthDebt = 0;
@@ -1428,7 +1433,7 @@
                                            (currentMonth.getMonth() - debtStartDate.getMonth());
                         if (monthsDiff >= 0 && monthsDiff < d.num_installments) {
                             const inst = (d.installments || []).find(i => Number(i.month_number) === monthsDiff);
-                            if (inst && inst.paid !== true) currentMonthDebt += Math.abs(parseFloat(inst.amount));
+                            if (inst && inst.paid !== true) currentMonthDebt += parseFloat(inst.amount || 0);
                         }
                     });
  
@@ -1440,17 +1445,17 @@
                                            (currentMonth.getMonth() - debtStartDate.getMonth()) + 1;
                         if (monthsDiff >= 0 && monthsDiff < d.num_installments) {
                             const inst = (d.installments || []).find(i => Number(i.month_number) === monthsDiff);
-                            if (inst && inst.paid !== true) nextMonthDebt += Math.abs(parseFloat(inst.amount));
+                            if (inst && inst.paid !== true) nextMonthDebt += parseFloat(inst.amount || 0);
                         }
                     });
+
+                    const totalDebtDisplay = getDebtDisplay(totalDebt, '$0');
+                    const currentMonthDisplay = getDebtDisplay(currentMonthDebt, '$0');
+                    const nextMonthDisplay = getDebtDisplay(nextMonthDebt, '$0');
  
                     const section = document.createElement('div');
                     section.className = 'category-section';
                     section.style.borderLeftColor = category.color;
- 
-                    const isIncomeOnly = regularDebts.length === 0 && categoryDebts.length > 0;
-                    const amtPrefix = isIncomeOnly ? '+' : '';
-                    const mesActualColor = isIncomeOnly ? '#00aa00' : '#ff6b6b';
  
                     section.innerHTML = `
                         <div class="category-header" style="margin-bottom: 0; cursor: pointer;" onclick="toggleCategory('${category.id}')">
@@ -1465,15 +1470,15 @@
                             <div class="category-stats">
                                 <div class="stat">
                                     <span class="stat-label">Deuda Total</span>
-                                    <span class="stat-value">${amtPrefix}$${formatNumber(totalDebt)}</span>
+                                    <span class="stat-value" style="color: ${totalDebtDisplay.color};">${totalDebtDisplay.text}</span>
                                 </div>
                                 <div class="stat">
                                     <span class="stat-label">Deuda Mes Actual</span>
-                                    <span class="stat-value" style="color: ${mesActualColor};">${amtPrefix}$${formatNumber(currentMonthDebt)}</span>
+                                    <span class="stat-value" style="color: ${currentMonthDisplay.color};">${currentMonthDisplay.text}</span>
                                 </div>
                                 <div class="stat">
                                     <span class="stat-label">Deuda Próximo Mes</span>
-                                    <span class="stat-value">${amtPrefix}$${formatNumber(nextMonthDebt)}</span>
+                                    <span class="stat-value" style="color: ${nextMonthDisplay.color};">${nextMonthDisplay.text}</span>
                                 </div>
                             </div>
                             <div class="category-actions">
