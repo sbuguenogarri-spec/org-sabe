@@ -999,7 +999,7 @@
            
             <div class="month-navigation">
                 <button class="month-nav-btn" onclick="previousMonth()">← Anterior</button>
-                <div class="month-display" id="monthDisplay">Julio 2026</div>
+                <div class="month-display" id="monthDisplay">Cargando mes...</div>
                 <button class="month-nav-btn" onclick="nextMonth()">Siguiente →</button>
             </div>
  
@@ -1192,6 +1192,7 @@
                 currentUserId = data.session.user.id;
                 currentUserEmail = data.session.user.email;
                 loadSavedMonthPreference();
+                updateMonthDisplay();
                 const _meta = data.session.user.user_metadata || {};
                 const _fullName = (_meta.full_name || ((_meta.nombre || '') + ' ' + (_meta.apellido || '')).trim()) || currentUserEmail.split('@')[0];
                 document.getElementById('welcomeText').textContent = `¡Bienvenido, ${_fullName}!`;
