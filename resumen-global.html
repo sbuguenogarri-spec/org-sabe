@@ -335,6 +335,13 @@
     return '$' + Math.round(Number(n)).toLocaleString('es-CL');
   }
 
+  function formatDebtAmount(n, zeroText = '-') {
+    const num = parseFloat(n) || 0;
+    if (num < 0) return { text: '+' + formatNum(Math.abs(num)), color: '#16a34a' };
+    if (num > 0) return { text: formatNum(num), color: '#dc2626' };
+    return { text: zeroText, color: '#667' };
+  }
+
   function parseAmount(str) {
     return parseFloat(str.toString().replace(/[$\.\s]/g,'').replace(',','.')) || 0;
   }
@@ -710,14 +717,16 @@
         html += '<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + cat.color + ';margin-right:7px;vertical-align:middle;"></span>' + cat.name + '</td>';
         visibleMonths.forEach(m => {
           const val = allData[m].deudasPorCategoria?.[cat.id] || 0;
-          html += '<td style="text-align:center;color:#dc2626;font-weight:600;">' + (val > 0 ? formatNum(val) : '-') + '</td>';
+          const debtDisplay = formatDebtAmount(val);
+          html += '<td style="text-align:center;color:' + debtDisplay.color + ';font-weight:600;">' + debtDisplay.text + '</td>';
         });
         html += '</tr>';
       });
     }
     html += '<tr class="total-row"><td>Total Deudas</td>';
     visibleMonths.forEach(m => {
-      html += '<td style="text-align:center;color:#dc2626;"><strong>' + formatNum(allData[m].deudas) + '</strong></td>';
+      const debtTotalDisplay = formatDebtAmount(allData[m].deudas, '$0');
+      html += '<td style="text-align:center;color:' + debtTotalDisplay.color + ';"><strong>' + debtTotalDisplay.text + '</strong></td>';
     });
     html += '</tr>';
     
