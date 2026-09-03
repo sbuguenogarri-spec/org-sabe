@@ -1125,8 +1125,9 @@
         const rainbowColors = ['#ff0000', '#ff7f00', '#ffdd00', '#00aa00', '#0066cc', '#4b0082', '#ff1493', '#20b2aa'];
         let categories = [];
         let debts = [];
+        let currentUserId = '';
         let currentUserEmail = '';
-        let currentMonth = new Date();
+        let currentMonth = getPreviousMonthDate();
         let editingCategoryId = null;
         let editingDebtId = null;
         let editingCategoryId_forDebt = null;
@@ -1145,6 +1146,36 @@
             const [y, m, d] = str.split('-').map(Number);
             return new Date(y, m - 1, d);
         }
+
+        function getPreviousMonthDate(baseDate = new Date()) {
+            return new Date(baseDate.getFullYear(), baseDate.getMonth() - 1, 1);
+        }
+
+        function monthToStorageValue(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            return `${year}-${month}`;
+        }
+
+        function storageValueToMonth(value) {
+            if (!value || !/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return null;
+            const [y, m] = value.split('-').map(Number);
+            return new Date(y, m - 1, 1);
+        }
+
+        function getMonthStorageKey() {
+            return `deudas_tc_selected_month_${currentUserId || currentUserEmail || 'anon'}`;
+        }
+
+        function loadSavedMonthPreference() {
+            const savedMonth = localStorage.getItem(getMonthStorageKey());
+            const parsedMonth = storageValueToMonth(savedMonth);
+            currentMonth = parsedMonth || getPreviousMonthDate();
+        }
+
+        function saveMonthPreference() {
+            localStorage.setItem(getMonthStorageKey(), monthToStorageValue(currentMonth));
+        }
  
         function getMonthYearString(date) {
             const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -1158,7 +1189,9 @@
         // VERIFICAR SESIÓN
         mySupabase.auth.getSession().then(({ data }) => {
             if (data.session) {
+                currentUserId = data.session.user.id;
                 currentUserEmail = data.session.user.email;
+                loadSavedMonthPreference();
                 const _meta = data.session.user.user_metadata || {};
                 const _fullName = (_meta.full_name || ((_meta.nombre || '') + ' ' + (_meta.apellido || '')).trim()) || currentUserEmail.split('@')[0];
                 document.getElementById('welcomeText').textContent = `¡Bienvenido, ${_fullName}!`;
@@ -1219,11 +1252,13 @@
  
         function previousMonth() {
             currentMonth.setMonth(currentMonth.getMonth() - 1);
+            saveMonthPreference();
             renderAll();
         }
  
         function nextMonth() {
             currentMonth.setMonth(currentMonth.getMonth() + 1);
+            saveMonthPreference();
             renderAll();
         }
  
